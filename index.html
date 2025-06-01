@@ -7,9 +7,9 @@
     
     <link rel="manifest" href="manifest.json">
     
-    <meta name="theme-color" content="#3B82F6"> 
+    <meta name="theme-color" content="#3B82F6"> {/* Blue-600 from Tailwind */}
 
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png"> 
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png"> {/* Example path */}
 
     <link id="favicon" rel="icon" href="https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com" defer></script>
@@ -370,7 +370,368 @@
             }
         };
 
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        const appId = (typeof __app_id !== 'undefined') ? __app_id : 'duct-inspection-app-default';
+        const firebaseConfig = (typeof __firebase_config !== 'undefined') ? JSON.parse(__firebase_config) : {
+            apiKey: "YOUR_API_KEY", 
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        const initialAuthToken = (typeof __initial_auth_token !== 'undefined') ? __initial_auth_token : null;
+
+        let firebaseApp;
+        let auth;
+        let db;
+        try {
+            firebaseApp = initializeApp(firebaseConfig);
+            auth = getAuth(firebaseApp);
+            db = getFirestore(firebaseApp);
+            // setLogLevel('debug'); 
+            console.log("Firebase initialized successfully.");
+        } catch (e) {
+            console.error("Firebase initialization error object:", e); 
+            let alertMsg = "CRITICAL: Firebase initialization failed. App may not work correctly. Check console.";
+            if (e && e.message) {
+                alertMsg += " Error: " + String(e.message); 
+            }
+            alert(alertMsg); 
+            
+            if (typeof showMessage === 'function' && document.getElementById('messageBox')) {
+                showMessage("Firebase initialization failed. App may not work correctly. See console for details.", "error");
+            }
+        }
+
+        let currentUserId = null;
+        let appInstance = null; 
+
+        function showMessage(message, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            if (!messageBox) { 
+                console.warn("showMessage called before messageBox is available. Message:", message);
+                alert(`Notification (${type}): ${message}`); 
+                return;
+            }
+            messageBox.textContent = message;
+            const baseClasses = 'fixed top-5 right-5 text-white p-4 rounded-lg shadow-xl z-50';
+            const typeClasses = { info: 'bg-blue-500', success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500 text-black' };
+            messageBox.className = `${baseClasses} ${typeClasses[type] || typeClasses.info}`;
+            messageBox.classList.remove('hidden', 'opacity-0', 'translate-y-[-20px]');
+            messageBox.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                messageBox.classList.remove('opacity-100', 'translate-y-0');
+                messageBox.classList.add('opacity-0', 'translate-y-[-20px]');
+                setTimeout(() => messageBox.classList.add('hidden'), 500); 
+            }, type === 'error' ? 7000 : 3000); 
+        }
+
+        async function attemptSignIn() {
+            console.log("Attempting initial sign-in...");
+            if (!auth) {
+                console.error("attemptSignIn: Firebase Auth not initialized. Cannot proceed.");
+                showMessage('Authentication system not ready. Please refresh.', 'error');
+                return;
+            }
+            try {
+                if (auth.currentUser) {
+                    console.log("User already signed in:", auth.currentUser.uid);
+                    return; 
+                }
+
+                if (initialAuthToken) {
+                    console.log("Attempting sign-in with custom token.");
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Successfully signed in with custom token.");
+                } else {
+                    console.log("No initialAuthToken, attempting anonymous sign-in.");
+                    await signInAnonymously(auth);
+                    console.log("Successfully signed in anonymously.");
+                }
+            } catch (error) {
+                 console.error("Error during sign-in attempt (custom token or anonymous):", error);
+                 showMessage('Authentication attempt failed: ' + (error.message || 'Unknown error'), 'error');
+            }
+        }
+        
+        if (auth) { 
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    console.log("Auth state changed: User signed in - ", currentUserId);
+                    const userIdDisplay = document.getElementById('userIdDisplay');
+                    if (userIdDisplay) userIdDisplay.textContent = currentUserId;
+                    
+                    if (!appInstance && db) { 
+                        console.log("User authenticated, appInstance not yet created (onAuthStateChanged). Creating now.");
+                        appInstance = new DuctInspectionApp(db);
+                        appInstance.init(); 
+                    }
+
+                    if (appInstance && typeof appInstance.loadSavedData === 'function') { 
+                        console.log("User authenticated, calling loadSavedData.");
+                        appInstance.loadSavedData();
+                    } else {
+                        console.warn("onAuthStateChanged: appInstance or loadSavedData not ready, or db not available when user authenticated.");
+                    }
+                } else {
+                    currentUserId = null; 
+                    console.log("Auth state changed: User signed out or no user yet established by attemptSignIn.");
+                    const userIdDisplay = document.getElementById('userIdDisplay');
+                    if (userIdDisplay) userIdDisplay.textContent = "Not authenticated";
+                }
+            });
+        } else {
+            console.error("Firebase Auth object is not available. Authentication will not work.");
+            if (typeof showMessage === 'function' && document.getElementById('messageBox')) {
+                 showMessage("Firebase Auth could not be initialized. App functions requiring login will fail.", "error");
+            } else {
+                alert("CRITICAL: Firebase Auth object not initialized. Login features disabled.");
+            }
+        }
+
+        class DuctInspectionApp {
+            constructor(firestoreDb) {
+                console.log("DuctInspectionApp constructor called.");
+                if (!firestoreDb) {
+                    console.error("Firestore DB instance is not provided to DuctInspectionApp constructor!");
+                    alert("CRITICAL: Database connection not available for the app. Functionality will be limited.");
+                }
+                this.db = firestoreDb; 
+                this.inspectionPhotos = []; 
+                this.workDonePhotos = [];   
+            }
+
+            init() {
+                console.log("DuctInspectionApp init() called.");
+                this.setupEventListeners();
+                this.setDefaultDate();
+            }
+
+            setupEventListeners() {
+                console.log("Setting up event listeners...");
+                const photoInputInspection = document.getElementById('photoInputInspection');
+                if(photoInputInspection) {
+                    photoInputInspection.addEventListener('change', (e) => this.handlePhotoUpload('inspection', e));
+                } else { console.error("photoInputInspection not found!"); }
+
+                const photoInputWorkDone = document.getElementById('photoInputWorkDone');
+                if(photoInputWorkDone) {
+                     photoInputWorkDone.addEventListener('change', (e) => this.handlePhotoUpload('workDone', e));
+                } else { console.error("photoInputWorkDone not found!"); }
+                
+                const photoUploadInspectionLabel = document.getElementById('photoUploadInspection'); 
+                if(photoUploadInspectionLabel) {
+                    photoUploadInspectionLabel.addEventListener('dragover', (e) => { e.preventDefault(); photoUploadInspectionLabel.style.borderColor = '#2980b9'; photoUploadInspectionLabel.classList.add('bg-blue-100'); });
+                    photoUploadInspectionLabel.addEventListener('dragleave', () => { photoUploadInspectionLabel.style.borderColor = '#3498db'; photoUploadInspectionLabel.classList.remove('bg-blue-100'); });
+                    photoUploadInspectionLabel.addEventListener('drop', (e) => { e.preventDefault(); photoUploadInspectionLabel.style.borderColor = '#3498db'; photoUploadInspectionLabel.classList.remove('bg-blue-100'); this.handlePhotoUpload('inspection', e); });
+                } else { console.error("photoUploadInspectionLabel not found!"); }
+
+                const photoUploadWorkDoneLabel = document.getElementById('photoUploadWorkDone'); 
+                if(photoUploadWorkDoneLabel) {
+                    photoUploadWorkDoneLabel.addEventListener('dragover', (e) => { e.preventDefault(); photoUploadWorkDoneLabel.style.borderColor = '#2980b9'; photoUploadWorkDoneLabel.classList.add('bg-green-100'); }); 
+                    photoUploadWorkDoneLabel.addEventListener('dragleave', () => { photoUploadWorkDoneLabel.style.borderColor = '#3498db'; photoUploadWorkDoneLabel.classList.remove('bg-green-100'); });
+                    photoUploadWorkDoneLabel.addEventListener('drop', (e) => { e.preventDefault(); photoUploadWorkDoneLabel.style.borderColor = '#3498db'; photoUploadWorkDoneLabel.classList.remove('bg-green-100'); this.handlePhotoUpload('workDone', e); });
+                } else { console.error("photoUploadWorkDoneLabel not found!"); }
+
+                const addressInput = document.getElementById('address');
+                if(addressInput) {
+                    addressInput.addEventListener('input', (e) => this.handleAddressInput(e));
+                } else { console.error("addressInput not found!"); }
+                
+                document.addEventListener('click', (e) => {
+                    const suggestionsBox = document.getElementById('addressSuggestions');
+                    const target = e.target; 
+                    if (suggestionsBox && target && typeof target.closest === 'function' && !target.closest('.form-group') && target.id !== 'address' && 
+                        !(target.id === 'photoUploadInspection' || target.closest('#photoUploadInspection')) &&
+                        !(target.id === 'photoUploadWorkDone' || target.closest('#photoUploadWorkDone')) ) { 
+                        suggestionsBox.style.display = 'none';
+                    }
+                });
+
+                const saveBtn = document.getElementById('saveBtn');
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', () => { console.log("Save Button Clicked"); this.saveData(); });
+                } else { console.error("Save Button (saveBtn) not found!"); }
+
+                const previewBtn = document.getElementById('previewBtn');
+                if (previewBtn) {
+                    previewBtn.addEventListener('click', () => { console.log("Preview Button Clicked"); this.previewReport(); });
+                } else { console.error("Preview Button (previewBtn) not found!"); }
+                
+                const generatePdfBtn = document.getElementById('generatePdfBtn');
+                if (generatePdfBtn) {
+                    generatePdfBtn.addEventListener('click', () => { console.log("Generate PDF Button Clicked"); this.generatePDF(); });
+                } else { console.error("Generate PDF Button (generatePdfBtn) not found!"); }
+
+
+                const modal = document.getElementById('reportModal');
+                const closeBtn = modal ? modal.querySelector('.close') : null; 
+                
+                if(closeBtn && modal) {
+                     closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+                } else { 
+                    if (!modal) console.error("Report Modal (reportModal) not found!");
+                    if (modal && !closeBtn) console.error("Modal close button not found!");
+                }
+
+                window.addEventListener('click', (e) => { if (modal && e.target === modal) { modal.style.display = 'none'; } });
+                console.log("Event listeners setup complete.");
+            }
+
+            setDefaultDate() {
+                const serviceDateEl = document.getElementById('serviceDate');
+                if (serviceDateEl && !serviceDateEl.value) { const today = new Date().toISOString().split('T')[0]; serviceDateEl.value = today; }
+            }
+
+            handlePhotoUpload(type, e) { 
+                console.log(`handlePhotoUpload called for type: ${type}. Event type: ${e.type}`);
+                const files = (e.target && e.target.files) || (e.dataTransfer && e.dataTransfer.files);
+                if (!files || files.length === 0) {
+                    showMessage('No files selected or dropped.', 'info');
+                    console.log('No files detected in handlePhotoUpload.');
+                    return;
+                }
+                console.log(`Handling ${files.length} files for type: ${type}. Files object:`, files);
+                if (files[0]) {
+                    console.log(`First file details: name=${files[0].name}, size=${files[0].size}, type=${files[0].type}`);
+                }
+                
+                const photoArray = type === 'inspection' ? this.inspectionPhotos : this.workDonePhotos;
+
+                Array.from(files).forEach((file, index) => {
+                    console.log(`Processing file ${index + 1} for ${type}: ${file.name}, type: ${file.type}, size: ${file.size}`);
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        
+                        reader.onprogress = (event) => {
+                            if (event.lengthComputable) {
+                                const percentLoaded = Math.round((event.loaded / event.total) * 100);
+                                console.log(`FileReader progress for ${file.name} (${type}): ${percentLoaded}%`);
+                            }
+                        };
+                        
+                        reader.onload = (event) => {
+                            const fileDataUrl = event.target && event.target.result;
+                            console.log(`FileReader onload for ${file.name} (${type}). Result type: ${typeof fileDataUrl}`);
+                            if (typeof fileDataUrl === 'string' && fileDataUrl.startsWith('data:image/')) {
+                                console.log(`File ${file.name} (${type}) read successfully. Data URL (first 60 chars): ${fileDataUrl.substring(0,60)}`);
+                                photoArray.push({ name: file.name, data: fileDataUrl });
+                                this.updatePhotoPreview(type); 
+                            } else {
+                                console.error(`File ${file.name} (${type}) did not produce a valid Data URL. Result (first 100 chars):`, fileDataUrl ? String(fileDataUrl).substring(0,100) : 'undefined', 'Full result:', (event.target && event.target.result));
+                                showMessage(`Error processing file ${file.name}. Invalid data format.`, 'error');
+                            }
+                        };
+                        reader.onerror = (errorEvent) => { 
+                            const errorObj = errorEvent.target && errorEvent.target.error;
+                            const errorCode = errorObj ? errorObj.code : 'N/A';
+                            const errorMessage = errorObj ? errorObj.message : 'Unknown error';
+                            console.error(`FileReader error for ${file.name} (${type}):`, errorEvent, errorObj, `Code: ${errorCode}`, `Message: ${errorMessage}`);
+                            showMessage(`Critical error reading file ${file.name}. Code: ${errorCode}. Message: ${errorMessage}`, 'error');
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        console.warn(`File ${file.name} (${type}) is not an image. Type: ${file.type}`);
+                        showMessage(`File ${file.name} is not an image and was skipped.`, 'warning');
+                    }
+                });
+                if (e.target && e.target.type === 'file') e.target.value = null; 
+            }
+
+            updatePhotoPreview(type) { 
+                const previewDivId = type === 'inspection' ? 'photoPreviewInspection' : 'photoPreviewWorkDone';
+                const photoArray = type === 'inspection' ? this.inspectionPhotos : this.workDonePhotos;
+                
+                const preview = document.getElementById(previewDivId);
+                if (!preview) { console.error(`${previewDivId} element not found!`); return; }
+                preview.innerHTML = ''; 
+                console.log(`Updating photo preview for ${type}. Number of photos: ${photoArray.length}`);
+
+                photoArray.forEach((photo, index) => {
+                    console.log(`Previewing photo ${index} for ${type}: ${photo.name}, Data starts with: ${photo.data ? String(photo.data).substring(0, 30) : 'No data'}`);
+                    if (!photo.data || typeof photo.data !== 'string' || !photo.data.startsWith('data:image/')) {
+                        console.error(`Invalid data for photo ${photo.name} in updatePhotoPreview (${type}).`);
+                        const errorItem = document.createElement('div');
+                        errorItem.className = 'photo-item shadow-md text-red-500 p-2 text-xs flex items-center justify-center';
+                        errorItem.textContent = `Error: Invalid data for ${photo.name}`;
+                        preview.appendChild(errorItem);
+                        return; 
+                    }
+                    const photoItem = document.createElement('div');
+                    photoItem.className = 'photo-item shadow-md';
+                    const img = document.createElement('img'); 
+                    img.src = photo.data; img.alt = photo.name;
+                    img.onerror = () => {
+                        console.error(`Image load error in preview for (${type}):`, photo.name, "Data attempted:", photo.data ? String(photo.data).substring(0,100) + "..." : "No data string");
+                        photoItem.innerHTML = ''; 
+                        const errorText = document.createElement('p');
+                        errorText.className = 'text-red-500 text-xs p-1 text-center';
+                        errorText.textContent = `Load error: ${photo.name}`;
+                        photoItem.appendChild(errorText);
+                    };
+                    const removeButton = document.createElement('button'); 
+                    removeButton.className = 'photo-remove'; removeButton.innerHTML = '<i class="fas fa-times"></i>'; removeButton.type = 'button'; 
+                    removeButton.addEventListener('click', () => this.removePhoto(type, index));
+                    photoItem.appendChild(img); photoItem.appendChild(removeButton);
+                    preview.appendChild(photoItem);
+                });
+            }
+
+            removePhoto(type, index) { 
+                const photoArray = type === 'inspection' ? this.inspectionPhotos : this.workDonePhotos;
+                photoArray.splice(index, 1); 
+                this.updatePhotoPreview(type); 
+            }
+
+            async handleAddressInput(e) { 
+                const query = e.target && e.target.value;
+                const suggestionsDiv = document.getElementById('addressSuggestions');
+                if (!suggestionsDiv) return;
+                if (!query || query.length < 3) { suggestionsDiv.style.display = 'none'; return; }
+                const suggestions = this.getCaliforniaAddressSuggestions(query); 
+                this.displayAddressSuggestions(suggestions);
+            }
+
+            getCaliforniaAddressSuggestions(query) {
+                console.log("Using placeholder address suggestions for query:", query);
+                const californiaAddresses = [ 
+                    '123 Main St, Los Angeles, CA 90210', '456 Oak Ave, San Francisco, CA 94102',
+                    '789 Pine St, San Diego, CA 92101', '321 Elm Dr, Sacramento, CA 95814',
+                    '1001 Hollywood Blvd, Los Angeles, CA 90028', '200 Market St, San Francisco, CA 94105'
+                ];
+                return californiaAddresses.filter(address => 
+                    address.toLowerCase().includes(query.toLowerCase())
+                ).slice(0, 5);
+            }
+
+            displayAddressSuggestions(suggestions) {
+                const suggestionsDiv = document.getElementById('addressSuggestions');
+                if (!suggestionsDiv) return; suggestionsDiv.innerHTML = '';
+                if (suggestions.length === 0) { suggestionsDiv.style.display = 'none'; return; }
+                suggestions.forEach(suggestion => {
+                    const item = document.createElement('div'); item.className = 'address-suggestion'; item.textContent = suggestion;
+                    item.addEventListener('click', () => { const input = document.getElementById('address'); if (input) input.value = suggestion; suggestionsDiv.style.display = 'none'; });
+                    suggestionsDiv.appendChild(item);
+                });
+                suggestionsDiv.style.display = 'block';
+            }
+
+            async saveData() {
+                console.log("saveData called.");
+                if (!currentUserId) { showMessage('User not authenticated. Cannot save data.', 'error'); return; }
+                if (!this.db) { showMessage('Database not initialized. Cannot save data.', 'error'); return; }
+                const formData = this.getFormData();
+                if (!formData.customerName || !formData.address || !formData.serviceDate) { showMessage('Please fill in required fields (Customer Name, Address, Service Date).', 'error'); return; }
+                const reportDocRef = doc(this.db, "artifacts", appId, "users", currentUserId, "ductInspectionReports", "currentReport");
+                try { await setDoc(reportDocRef, formData); showMessage('Data saved successfully to Firebase!', 'success'); } catch (error) {
+                    console.error("Error saving data to Firestore: ", error); showMessage('Error saving data. Check console.', 'error');
+                }
+            }
 
             async loadSavedData() {
                 console.log("loadSavedData called.");
@@ -794,7 +1155,24 @@
             const indicator = document.getElementById('javascript-running-indicator');
             if(indicator) indicator.style.display = 'block';
             
-
+            if (db && auth) { // Ensure Firebase services are initialized
+                if (!appInstance) { 
+                    console.log("Creating App instance in DOMContentLoaded (db and auth available).");
+                    appInstance = new DuctInspectionApp(db);
+                    appInstance.init(); 
+                }
+                // Attempt initial sign-in after app instance is ready
+                attemptSignIn().catch(error => { 
+                    console.error("Error during initial sign-in attempt from DOMContentLoaded:", error);
+                    showMessage("Sign-in attempt failed: " + (error.message || "Unknown error"), "error");
+                });
+            } else {
+                console.error("DOMContentLoaded: Firebase db or auth is not initialized. App instance NOT created. Firebase init likely failed.");
+                // Alert should have been shown by Firebase init catch block.
+                // Add an extra alert here just in case.
+                alert("CRITICAL: App cannot start because Firebase connection failed. Please check configuration and network.");
+            }
+        });
 
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
@@ -812,3 +1190,238 @@
     </script>
 </body>
 </html>
+```
+
+---
+
+**2. Web App Manifest (`manifest.json`)**
+
+Create a new file named `manifest.json` in the same directory as your HTML file and paste the following content into it. You'll need to create an `icons` folder and place appropriately sized icons there.
+
+```json
+{
+  "name": "Bay Services Inspection Report",
+  "short_name": "BayReport",
+  "description": "Application for creating inspection and work reports for Bay Services.",
+  "start_url": "./index.html", /* Assuming your HTML file is index.html or adjust as needed */
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+```
+
+**Important for `manifest.json`:**
+* **`start_url`**: Make sure this points to your main HTML file. If your file is named differently than `index.html`, change it. Using `./` makes it relative.
+* **`icons`**: You need to create these icon files (e.g., using your company logo and an icon generator tool) and place them in an `icons` folder (or adjust the paths). Browsers use these for the home screen icon.
+
+---
+
+**3. Service Worker (`sw.js`)**
+
+Create a new file named `sw.js` in the same directory as your HTML file and paste the following content into it. This is a basic "cache-first" service worker for the app shell.
+
+```javascript
+const CACHE_NAME = 'bay-report-app-v1'; // Change version if you update assets
+const urlsToCache = [
+  './', // If start_url is './index.html', this caches the root
+  './index.html', // Or whatever your main HTML file is named
+  // Add other core HTML files if you have multiple pages for the shell
+  // CSS files (if you compile Tailwind to a static CSS file, add it here)
+  // Main JavaScript files (if you bundle your JS, add the bundle path)
+  'https://cdn.tailwindcss.com', // Caching CDN resources can be tricky due to opaque responses, but let's try
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  'https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7W0Q5nw.woff2', // Example woff2 file for Inter, actual URLs may vary or be multiple
+  // Add your icon paths from manifest.json
+  'icons/icon-72x72.png',
+  'icons/icon-96x96.png',
+  'icons/icon-128x128.png',
+  'icons/icon-144x144.png',
+  'icons/icon-152x152.png',
+  'icons/icon-192x192.png',
+  'icons/icon-384x384.png',
+  'icons/icon-512x512.png',
+  'https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png' // Your company logo
+];
+
+// Install event - cache core assets
+self.addEventListener('install', event => {
+  console.log('Service Worker: Installing...');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Service Worker: Caching app shell');
+        // Add all URLs, but be mindful of opaque responses from CDNs.
+        // For CDNs, it's often better to let the browser cache them, or use workbox for more complex strategies.
+        // However, for basic offline shell, this can work.
+        const cachePromises = urlsToCache.map(urlToCache => {
+          return fetch(new Request(urlToCache, { mode: 'cors' })) // Attempt CORS request for CDNs
+            .then(response => {
+              if (!response.ok && response.type !== 'opaque') { // Opaque responses for CDN might not be "ok" but are cacheable
+                console.error(`Service Worker: Failed to fetch (and will not cache) ${urlToCache}. Status: ${response.status}`);
+                return Promise.resolve(); // Don't break the whole cache.addAll
+              }
+              // If it's an opaque response, clone it carefully.
+              // For regular responses, just use it.
+              return cache.put(urlToCache, response.clone());
+            })
+            .catch(err => {
+              console.error(`Service Worker: Error fetching/caching ${urlToCache}`, err);
+              return Promise.resolve();
+            });
+        });
+        return Promise.all(cachePromises);
+      })
+      .then(() => {
+        console.log('Service Worker: App shell cached successfully');
+        return self.skipWaiting(); // Activate the new service worker immediately
+      })
+      .catch(error => {
+        console.error('Service Worker: Caching failed', error);
+      })
+  );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', event => {
+  console.log('Service Worker: Activating...');
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+            console.log('Service Worker: Clearing old cache', cache);
+            return caches.delete(cache);
+          }
+        })
+      );
+    }).then(() => {
+        console.log('Service Worker: Activated successfully and old caches cleared.');
+        return self.clients.claim(); // Take control of all open clients
+    })
+  );
+});
+
+// Fetch event - serve cached content when offline (cache-first for listed assets)
+self.addEventListener('fetch', event => {
+  // Let browser handle requests for Firebase and other dynamic external services
+  if (event.request.url.startsWith('https://firestore.googleapis.com') || 
+      event.request.url.startsWith('https://firebaseauth.googleapis.com') ||
+      event.request.url.includes('YOUR_PROJECT_ID.firebaseapp.com')) { // Adjust if you use other Firebase services
+    // For Firebase and other dynamic APIs, always go to the network.
+    // You might implement more sophisticated offline strategies for Firebase data later if needed.
+    // console.log('Service Worker: Bypassing cache for Firebase request:', event.request.url);
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // For CDN resources that might have opaque responses, a network-first or stale-while-revalidate might be better
+  // but for a simple offline shell, cache-first can be acceptable if they get cached.
+  if (event.request.url.startsWith('https://cdn.tailwindcss.com') ||
+      event.request.url.startsWith('https://cdnjs.cloudflare.com') ||
+      event.request.url.startsWith('https://fonts.googleapis.com') ||
+      event.request.url.startsWith('https://fonts.gstatic.com')) {
+    
+    event.respondWith(
+      caches.match(event.request).then(cachedResponse => {
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          // Check if we received a valid response to cache
+          if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        }).catch(error => {
+            console.warn('Service Worker: Network request failed for CDN, serving from cache if available.', event.request.url, error);
+            return cachedResponse; // Serve from cache if network fails for CDN
+        });
+        return cachedResponse || fetchPromise; // Serve from cache if available, else network
+      })
+    );
+    return;
+  }
+  
+  // Default cache-first strategy for app shell resources
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          // console.log('Service Worker: Serving from cache', event.request.url);
+          return response;
+        }
+        // console.log('Service Worker: Fetching from network', event.request.url);
+        return fetch(event.request).then(
+          networkResponse => {
+            // Optional: Cache new resources dynamically if they are not in urlsToCache
+            // Be careful with this to not cache everything.
+            // if (networkResponse && networkResponse.ok && !urlsToCache.includes(event.request.url) && event.request.method === 'GET') {
+            //   const responseToCache = networkResponse.clone();
+            //   caches.open(CACHE_NAME).then(cache => {
+            //     cache.put(event.request, responseToCache);
+            //   });
+            // }
+            return networkResponse;
+          }
+        ).catch(error => {
+          console.error('Service Worker: Fetch failed; returning offline page if available or error.', error);
+          // You could return a generic offline.html page here if you have one
+          // return caches.match('./offline.html'); 
+        });
+      })
+  );
+});
+```
