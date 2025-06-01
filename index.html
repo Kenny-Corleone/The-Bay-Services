@@ -794,24 +794,7 @@
             const indicator = document.getElementById('javascript-running-indicator');
             if(indicator) indicator.style.display = 'block';
             
-            if (db && auth) { // Ensure Firebase services are initialized
-                if (!appInstance) { 
-                    console.log("Creating App instance in DOMContentLoaded (db and auth available).");
-                    appInstance = new DuctInspectionApp(db);
-                    appInstance.init(); 
-                }
-                // Attempt initial sign-in after app instance is ready
-                attemptSignIn().catch(error => { 
-                    console.error("Error during initial sign-in attempt from DOMContentLoaded:", error);
-                    showMessage("Sign-in attempt failed: " + (error.message || "Unknown error"), "error");
-                });
-            } else {
-                console.error("DOMContentLoaded: Firebase db or auth is not initialized. App instance NOT created. Firebase init likely failed.");
-                // Alert should have been shown by Firebase init catch block.
-                // Add an extra alert here just in case.
-                alert("CRITICAL: App cannot start because Firebase connection failed. Please check configuration and network.");
-            }
-        });
+
 
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
