@@ -1,0 +1,15 @@
+{
+  "name": "Bay Services Inspection Report",
+  "short_name": "BayReport",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

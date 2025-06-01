@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection & Work Report App</title>
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <meta name="theme-color" content="#3B82F6"> {/* Blue-600 from Tailwind */}
+
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png"> {/* Example path */}
+
+    <link id="favicon" rel="icon" href="https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; 
+        }
+        .form-group {
+            margin-bottom: 1rem; 
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151; 
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB; 
+            border-radius: 0.375rem; 
+            box-shadow: inset 0 1px 2px 0 rgba(0,0,0,0.05);
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #3B82F6; 
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            text-align: center; 
+        }
+        .btn-primary {
+            background-color: #3B82F6; color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2563EB; 
+        }
+        .btn-secondary {
+            background-color: #6B7280; color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #4B5563; 
+        }
+        .btn-success {
+            background-color: #10B981; color: white;
+        }
+        .btn-success:hover {
+            background-color: #059669; 
+        }
+        .photo-upload-area { 
+            display: block; 
+            border: 2px dashed #3498db; 
+            padding: 1.5rem; 
+            text-align: center;
+            cursor: pointer;
+            border-radius: 0.5rem; 
+            background-color: #f8fafc; 
+        }
+        .photo-upload-area:hover {
+            border-color: #2980b9; 
+            background-color: #eff6ff; 
+        }
+        .photo-item {
+            position: relative; display: inline-block; margin: 0.5rem;
+            border: 1px solid #e5e7eb; border-radius: 0.375rem; overflow: hidden;
+            width: 100px; 
+            height: 100px; 
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            background-color: #f9fafb; 
+        }
+        .photo-item img {
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: cover;
+        }
+        .photo-remove {
+            position: absolute; top: 5px; right: 5px;
+            background-color: rgba(0,0,0,0.6); color: white;
+            border: none; border-radius: 50%;
+            width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.8rem;
+        }
+        .photo-remove:hover {
+            background-color: rgba(239, 68, 68, 0.8); 
+        }
+        .modal {
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            overflow-y: auto; 
+            background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+            background-color: #fff; margin: 5% auto; padding: 20px; 
+            border: 1px solid #ccc; width: 90%; max-width: 800px; 
+            border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative; 
+        }
+        .modal-body { 
+             max-height: 75vh; 
+             overflow-y: auto;
+        }
+        .close {
+            position: absolute; top: 10px; right: 15px;
+            color: #aaa; font-size: 28px; font-weight: bold;
+            cursor: pointer; z-index: 1001;
+        }
+        .close:hover, .close:focus {
+            color: #333;
+        }
+        .report-content img.report-logo-preview { 
+            max-width: 150px; 
+            height: auto; 
+            margin-bottom: 1rem;
+            border: none; 
+        }
+        .report-content img { 
+            max-width: 150px; 
+            height: auto; margin: 5px; border: 1px solid #ddd;
+            border-radius: 4px; display: inline-block; 
+        }
+        .report-title {
+            font-size: 1.5em; font-weight: bold; margin-bottom: 0.5rem;
+            color: #1F2937; 
+        }
+         .report-phase-title { 
+            font-size: 1.3em; font-weight: bold; margin-top: 1.5rem; margin-bottom: 0.75rem;
+            color: #1e40af; 
+            border-bottom: 2px solid #93c5fd; 
+            padding-bottom: 0.25rem;
+        }
+        .report-header {
+            text-align: center; margin-bottom: 1rem; 
+            border-bottom: 2px solid #e5e7eb; 
+            padding-bottom: 1rem;
+        }
+        .report-section {
+            margin-bottom: 1.5rem;
+        }
+        .report-section h3 { 
+            font-size: 1.1em; 
+            font-weight: 600;
+            color: #3B82F6; 
+            margin-bottom: 0.5rem; 
+            border-bottom: 1px solid #DBEAFE; 
+            padding-bottom: 0.25rem;
+        }
+        .report-photos {
+            display: flex; flex-wrap: wrap; gap: 10px; 
+            justify-content: flex-start; 
+        }
+        .address-suggestions {
+            border: 1px solid #D1D5DB; border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            max-height: 200px; overflow-y: auto;
+            background-color: white; position: absolute;
+            width: calc(100% - 2px); 
+            z-index: 10;
+        }
+        .address-suggestion {
+            padding: 0.75rem; cursor: pointer;
+        }
+        .address-suggestion:hover {
+            background-color: #F3F4F6; 
+        }
+        #messageBox {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        .checkbox-label {
+            display: flex; align-items: center; margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        @media (max-width: 640px) { 
+            .modal-content {
+                margin: 2.5% auto; padding: 15px; width: 95%;
+            }
+            .report-title { font-size: 1.3em; }
+            .report-phase-title { font-size: 1.15em; }
+            .report-section h3 { font-size: 1.0em; }
+            .btn {
+                width: 100%; margin-bottom: 0.5rem; 
+            }
+            .flex.sm\\:flex-row { 
+                 flex-direction: column;
+            }
+            .flex.sm\\:flex-row > .btn:not(:last-child) {
+                margin-right: 0; 
+            }
+        }
+    </style>
+</head>
+<body class="p-2 sm:p-4 md:p-8">
+    <div id="javascript-running-indicator" style="background-color: lightgreen; padding: 5px; text-align: center; display: none;">JavaScript is running!</div>
+    <div id="messageBox" class="fixed top-5 right-5 text-white p-4 rounded-lg shadow-xl z-50 hidden opacity-0 transform translate-y-[-20px]"></div>
+
+    <div class="container mx-auto max-w-4xl bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-2xl">
+        <div class="text-center mb-6 sm:mb-8">
+            <img id="headerLogo" src="https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png" alt="Bay Services Logo" class="mx-auto h-12 sm:h-16 w-auto mb-3 sm:mb-4" onerror="this.style.display='none'; console.error('Failed to load header logo from URL. It will be hidden.')">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Inspection & Work Report</h1>
+            <p class="text-sm sm:text-base text-gray-600">Fill out the inspection and work details below.</p>
+            <p class="text-xs sm:text-sm text-gray-500 mt-2">User ID: <span id="userIdDisplay">Loading...</span></p>
+        </div>
+
+        <form id="inspectionForm" class="space-y-6">
+            <fieldset class="border p-3 sm:p-4 rounded-md">
+                <legend class="text-lg font-semibold text-gray-700 px-2">Customer & Service Setup</legend>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div class="form-group">
+                        <label for="customerName" class="form-label">Customer Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="customerName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                        <input type="tel" id="phoneNumber" class="form-input">
+                    </div>
+                    <div class="form-group md:col-span-2">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" id="email" class="form-input">
+                    </div>
+                    <div class="form-group relative md:col-span-2"> 
+                        <label for="address" class="form-label">Service Address <span class="text-red-500">*</span></label>
+                        <input type="text" id="address" class="form-input" required autocomplete="off">
+                        <div id="addressSuggestions" class="address-suggestions hidden"></div>
+                    </div>
+                     <div class="form-group">
+                        <label for="serviceDate" class="form-label">Service Date <span class="text-red-500">*</span></label>
+                        <input type="date" id="serviceDate" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="serviceType" class="form-label">Service Type</label>
+                        <select id="serviceType" class="form-select">
+                            <option value="Duct Inspection">Duct Inspection</option>
+                            <option value="Duct Cleaning">Duct Cleaning</option>
+                            <option value="Duct Repair">Duct Repair</option>
+                            <option value="Full Service">Full Service (Inspect & Clean)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="technician" class="form-label">Technician Name</label>
+                        <select id="technician" class="form-select">
+                            <option value="">Select Technician</option>
+                            <option value="Riz">Riz</option>
+                            <option value="Alex">Alex</option>
+                            <option value="Orkhan">Orkhan</option>
+                            <option value="Vusal">Vusal</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="border p-3 sm:p-4 rounded-md">
+                <legend class="text-xl font-bold text-blue-700 px-2">Phase 1: Pre-Service Inspection Report</legend>
+                <div class="form-group mt-4">
+                    <label for="preInspectionNotes" class="form-label">Initial Observations & Findings</label>
+                    <textarea id="preInspectionNotes" class="form-textarea" rows="4" placeholder="Describe the condition of the ducts, any visible issues, customer concerns, etc."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Inspection Photos (Before Service)</label>
+                    <label for="photoInputInspection" id="photoUploadInspection" class="photo-upload-area mb-4">
+                        <i class="fas fa-camera-retro text-3xl sm:text-4xl text-blue-500 mb-2"></i>
+                        <p class="text-sm sm:text-base">Upload Inspection Photos</p>
+                    </label>
+                    <input type="file" id="photoInputInspection" multiple accept="image/*" class="sr-only">
+                    <div id="photoPreviewInspection" class="mt-4 grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
+                    </div>
+                </div>
+            </fieldset>
+            
+            <fieldset class="border p-3 sm:p-4 rounded-md">
+                <legend class="text-xl font-bold text-green-700 px-2">Phase 2: Work Done & Recommendations Report</legend>
+                <div class="form-group mt-4">
+                    <label class="form-label">Work Performed Checklist</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2"> 
+                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Visual Inspection of Ducts (Post-Service)" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Visual Inspection (Post-Service)</label>
+                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Airflow Test (Post-Service)" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Airflow Test (Post-Service)</label>
+                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Filter Check/Replacement" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Filter Check/Replacement</label>
+                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Supply Vent Cleaning" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Supply Vent Cleaning</label>
+                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Return Vent Cleaning" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Return Vent Cleaning</label>
+                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Main Trunk Line Cleaning" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Main Trunk Line Cleaning</label>
+                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Sanitization Applied" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Sanitization Applied</label>
+                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Debris Removal" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Debris Removal</label>
+                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Component Repair (Specify Below)" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Component Repair (Specify)</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="workPerformed" class="form-label">Additional Work Performed Details</label>
+                    <textarea id="workPerformed" class="form-textarea" rows="4" placeholder="Describe any additional tasks, repairs, or specific details about the work done."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="recommendations" class="form-label">Recommendations for Customer</label>
+                    <textarea id="recommendations" class="form-textarea" rows="4" placeholder="Suggest any follow-up actions, future maintenance, or improvements."></textarea>
+                </div>
+                 <div class="form-group">
+                    <label class="form-label">Work Done Photos (After Service)</label>
+                    <label for="photoInputWorkDone" id="photoUploadWorkDone" class="photo-upload-area mb-4">
+                        <i class="fas fa-tools text-3xl sm:text-4xl text-green-500 mb-2"></i>
+                        <p class="text-sm sm:text-base">Upload Work Done Photos</p>
+                    </label>
+                    <input type="file" id="photoInputWorkDone" multiple accept="image/*" class="sr-only">
+                    <div id="photoPreviewWorkDone" class="mt-4 grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 mt-6 sm:mt-8">
+                <button type="button" id="saveBtn" class="btn btn-primary w-full sm:w-auto"><i class="fas fa-save mr-2"></i>Save Data</button>
+                <button type="button" id="previewBtn" class="btn btn-secondary w-full sm:w-auto"><i class="fas fa-eye mr-2"></i>Preview Report</button>
+                <button type="button" id="generatePdfBtn" class="btn btn-success w-full sm:w-auto"><i class="fas fa-file-pdf mr-2"></i>Generate PDF</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-body" id="reportPreview"> 
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- Global Error Handler ---
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error("Global error caught:", { message, source, lineno, colno, errorObj: error });
+            const displayMessage = `Critical Error: ${message} (line ${lineno}). Check console.`;
+            if (typeof showMessage === 'function' && document.getElementById('messageBox')) { 
+                showMessage(displayMessage, 'error');
+            } else {
+                let alertMsg = `CRITICAL ERROR: ${message} (Source: ${source}, Line: ${lineno}). App may not work. Please check browser console.`;
+                if (error && error.message) {
+                    alertMsg += ` Details: ${String(error.message)}`; 
+                }
+                alert(alertMsg);
+            }
+        };
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = (typeof __app_id !== 'undefined') ? __app_id : 'duct-inspection-app-default';
+        const firebaseConfig = (typeof __firebase_config !== 'undefined') ? JSON.parse(__firebase_config) : {
+            apiKey: "YOUR_API_KEY", 
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        const initialAuthToken = (typeof __initial_auth_token !== 'undefined') ? __initial_auth_token : null;
+
+        let firebaseApp;
+        let auth;
+        let db;
+        try {
+            firebaseApp = initializeApp(firebaseConfig);
+            auth = getAuth(firebaseApp);
+            db = getFirestore(firebaseApp);
+            // setLogLevel('debug'); 
+            console.log("Firebase initialized successfully.");
+        } catch (e) {
+            console.error("Firebase initialization error object:", e); 
+            let alertMsg = "CRITICAL: Firebase initialization failed. App may not work correctly. Check console.";
+            if (e && e.message) {
+                alertMsg += " Error: " + String(e.message); 
+            }
+            alert(alertMsg); 
+            
+            if (typeof showMessage === 'function' && document.getElementById('messageBox')) {
+                showMessage("Firebase initialization failed. App may not work correctly. See console for details.", "error");
+            }
+        }
+
+        let currentUserId = null;
+        let appInstance = null; 
+
+        function showMessage(message, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            if (!messageBox) { 
+                console.warn("showMessage called before messageBox is available. Message:", message);
+                alert(`Notification (${type}): ${message}`); 
+                return;
+            }
+            messageBox.textContent = message;
+            const baseClasses = 'fixed top-5 right-5 text-white p-4 rounded-lg shadow-xl z-50';
+            const typeClasses = { info: 'bg-blue-500', success: 'bg-green-500', error: 'bg-red-500', warning: 'bg-yellow-500 text-black' };
+            messageBox.className = `${baseClasses} ${typeClasses[type] || typeClasses.info}`;
+            messageBox.classList.remove('hidden', 'opacity-0', 'translate-y-[-20px]');
+            messageBox.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                messageBox.classList.remove('opacity-100', 'translate-y-0');
+                messageBox.classList.add('opacity-0', 'translate-y-[-20px]');
+                setTimeout(() => messageBox.classList.add('hidden'), 500); 
+            }, type === 'error' ? 7000 : 3000); 
+        }
+
+        async function attemptSignIn() {
+            console.log("Attempting initial sign-in...");
+            if (!auth) {
+                console.error("attemptSignIn: Firebase Auth not initialized. Cannot proceed.");
+                showMessage('Authentication system not ready. Please refresh.', 'error');
+                return;
+            }
+            try {
+                if (auth.currentUser) {
+                    console.log("User already signed in:", auth.currentUser.uid);
+                    return; 
+                }
+
+                if (initialAuthToken) {
+                    console.log("Attempting sign-in with custom token.");
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Successfully signed in with custom token.");
+                } else {
+                    console.log("No initialAuthToken, attempting anonymous sign-in.");
+                    await signInAnonymously(auth);
+                    console.log("Successfully signed in anonymously.");
+                }
+            } catch (error) {
+                 console.error("Error during sign-in attempt (custom token or anonymous):", error);
+                 showMessage('Authentication attempt failed: ' + (error.message || 'Unknown error'), 'error');
+            }
+        }
+        
+        if (auth) { 
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    console.log("Auth state changed: User signed in - ", currentUserId);
+                    const userIdDisplay = document.getElementById('userIdDisplay');
+                    if (userIdDisplay) userIdDisplay.textContent = currentUserId;
+                    
+                    if (!appInstance && db) { 
+                        console.log("User authenticated, appInstance not yet created (onAuthStateChanged). Creating now.");
+                        appInstance = new DuctInspectionApp(db);
+                        appInstance.init(); 
+                    }
+
+                    if (appInstance && typeof appInstance.loadSavedData === 'function') { 
+                        console.log("User authenticated, calling loadSavedData.");
+                        appInstance.loadSavedData();
+                    } else {
+                        console.warn("onAuthStateChanged: appInstance or loadSavedData not ready, or db not available when user authenticated.");
+                    }
+                } else {
+                    currentUserId = null; 
+                    console.log("Auth state changed: User signed out or no user yet established by attemptSignIn.");
+                    const userIdDisplay = document.getElementById('userIdDisplay');
+                    if (userIdDisplay) userIdDisplay.textContent = "Not authenticated";
+                }
+            });
+        } else {
+            console.error("Firebase Auth object is not available. Authentication will not work.");
+            if (typeof showMessage === 'function' && document.getElementById('messageBox')) {
+                 showMessage("Firebase Auth could not be initialized. App functions requiring login will fail.", "error");
+            } else {
+                alert("CRITICAL: Firebase Auth object not initialized. Login features disabled.");
+            }
+        }
+
+        class DuctInspectionApp {
+            constructor(firestoreDb) {
+                console.log("DuctInspectionApp constructor called.");
+                if (!firestoreDb) {
+                    console.error("Firestore DB instance is not provided to DuctInspectionApp constructor!");
+                    alert("CRITICAL: Database connection not available for the app. Functionality will be limited.");
+                }
+                this.db = firestoreDb; 
+                this.inspectionPhotos = []; 
+                this.workDonePhotos = [];   
+            }
+
+            init() {
+                console.log("DuctInspectionApp init() called.");
+                this.setupEventListeners();
+                this.setDefaultDate();
+            }
+
+            setupEventListeners() {
+                console.log("Setting up event listeners...");
+                const photoInputInspection = document.getElementById('photoInputInspection');
+                if(photoInputInspection) {
+                    photoInputInspection.addEventListener('change', (e) => this.handlePhotoUpload('inspection', e));
+                } else { console.error("photoInputInspection not found!"); }
+
+                const photoInputWorkDone = document.getElementById('photoInputWorkDone');
+                if(photoInputWorkDone) {
+                     photoInputWorkDone.addEventListener('change', (e) => this.handlePhotoUpload('workDone', e));
+                } else { console.error("photoInputWorkDone not found!"); }
+                
+                const photoUploadInspectionLabel = document.getElementById('photoUploadInspection'); 
+                if(photoUploadInspectionLabel) {
+                    photoUploadInspectionLabel.addEventListener('dragover', (e) => { e.preventDefault(); photoUploadInspectionLabel.style.borderColor = '#2980b9'; photoUploadInspectionLabel.classList.add('bg-blue-100'); });
+                    photoUploadInspectionLabel.addEventListener('dragleave', () => { photoUploadInspectionLabel.style.borderColor = '#3498db'; photoUploadInspectionLabel.classList.remove('bg-blue-100'); });
+                    photoUploadInspectionLabel.addEventListener('drop', (e) => { e.preventDefault(); photoUploadInspectionLabel.style.borderColor = '#3498db'; photoUploadInspectionLabel.classList.remove('bg-blue-100'); this.handlePhotoUpload('inspection', e); });
+                } else { console.error("photoUploadInspectionLabel not found!"); }
+
+                const photoUploadWorkDoneLabel = document.getElementById('photoUploadWorkDone'); 
+                if(photoUploadWorkDoneLabel) {
+                    photoUploadWorkDoneLabel.addEventListener('dragover', (e) => { e.preventDefault(); photoUploadWorkDoneLabel.style.borderColor = '#2980b9'; photoUploadWorkDoneLabel.classList.add('bg-green-100'); }); 
+                    photoUploadWorkDoneLabel.addEventListener('dragleave', () => { photoUploadWorkDoneLabel.style.borderColor = '#3498db'; photoUploadWorkDoneLabel.classList.remove('bg-green-100'); });
+                    photoUploadWorkDoneLabel.addEventListener('drop', (e) => { e.preventDefault(); photoUploadWorkDoneLabel.style.borderColor = '#3498db'; photoUploadWorkDoneLabel.classList.remove('bg-green-100'); this.handlePhotoUpload('workDone', e); });
+                } else { console.error("photoUploadWorkDoneLabel not found!"); }
+
+                const addressInput = document.getElementById('address');
+                if(addressInput) {
+                    addressInput.addEventListener('input', (e) => this.handleAddressInput(e));
+                } else { console.error("addressInput not found!"); }
+                
+                document.addEventListener('click', (e) => {
+                    const suggestionsBox = document.getElementById('addressSuggestions');
+                    const target = e.target; 
+                    if (suggestionsBox && target && typeof target.closest === 'function' && !target.closest('.form-group') && target.id !== 'address' && 
+                        !(target.id === 'photoUploadInspection' || target.closest('#photoUploadInspection')) &&
+                        !(target.id === 'photoUploadWorkDone' || target.closest('#photoUploadWorkDone')) ) { 
+                        suggestionsBox.style.display = 'none';
+                    }
+                });
+
+                const saveBtn = document.getElementById('saveBtn');
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', () => { console.log("Save Button Clicked"); this.saveData(); });
+                } else { console.error("Save Button (saveBtn) not found!"); }
+
+                const previewBtn = document.getElementById('previewBtn');
+                if (previewBtn) {
+                    previewBtn.addEventListener('click', () => { console.log("Preview Button Clicked"); this.previewReport(); });
+                } else { console.error("Preview Button (previewBtn) not found!"); }
+                
+                const generatePdfBtn = document.getElementById('generatePdfBtn');
+                if (generatePdfBtn) {
+                    generatePdfBtn.addEventListener('click', () => { console.log("Generate PDF Button Clicked"); this.generatePDF(); });
+                } else { console.error("Generate PDF Button (generatePdfBtn) not found!"); }
+
+
+                const modal = document.getElementById('reportModal');
+                const closeBtn = modal ? modal.querySelector('.close') : null; 
+                
+                if(closeBtn && modal) {
+                     closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+                } else { 
+                    if (!modal) console.error("Report Modal (reportModal) not found!");
+                    if (modal && !closeBtn) console.error("Modal close button not found!");
+                }
+
+                window.addEventListener('click', (e) => { if (modal && e.target === modal) { modal.style.display = 'none'; } });
+                console.log("Event listeners setup complete.");
+            }
+
+            setDefaultDate() {
+                const serviceDateEl = document.getElementById('serviceDate');
+                if (serviceDateEl && !serviceDateEl.value) { const today = new Date().toISOString().split('T')[0]; serviceDateEl.value = today; }
+            }
+
+            handlePhotoUpload(type, e) { 
+                console.log(`handlePhotoUpload called for type: ${type}. Event type: ${e.type}`);
+                const files = (e.target && e.target.files) || (e.dataTransfer && e.dataTransfer.files);
+                if (!files || files.length === 0) {
+                    showMessage('No files selected or dropped.', 'info');
+                    console.log('No files detected in handlePhotoUpload.');
+                    return;
+                }
+                console.log(`Handling ${files.length} files for type: ${type}. Files object:`, files);
+                if (files[0]) {
+                    console.log(`First file details: name=${files[0].name}, size=${files[0].size}, type=${files[0].type}`);
+                }
+                
+                const photoArray = type === 'inspection' ? this.inspectionPhotos : this.workDonePhotos;
+
+                Array.from(files).forEach((file, index) => {
+                    console.log(`Processing file ${index + 1} for ${type}: ${file.name}, type: ${file.type}, size: ${file.size}`);
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        
+                        reader.onprogress = (event) => {
+                            if (event.lengthComputable) {
+                                const percentLoaded = Math.round((event.loaded / event.total) * 100);
+                                console.log(`FileReader progress for ${file.name} (${type}): ${percentLoaded}%`);
+                            }
+                        };
+                        
+                        reader.onload = (event) => {
+                            const fileDataUrl = event.target && event.target.result;
+                            console.log(`FileReader onload for ${file.name} (${type}). Result type: ${typeof fileDataUrl}`);
+                            if (typeof fileDataUrl === 'string' && fileDataUrl.startsWith('data:image/')) {
+                                console.log(`File ${file.name} (${type}) read successfully. Data URL (first 60 chars): ${fileDataUrl.substring(0,60)}`);
+                                photoArray.push({ name: file.name, data: fileDataUrl });
+                                this.updatePhotoPreview(type); 
+                            } else {
+                                console.error(`File ${file.name} (${type}) did not produce a valid Data URL. Result (first 100 chars):`, fileDataUrl ? String(fileDataUrl).substring(0,100) : 'undefined', 'Full result:', (event.target && event.target.result));
+                                showMessage(`Error processing file ${file.name}. Invalid data format.`, 'error');
+                            }
+                        };
+                        reader.onerror = (errorEvent) => { 
+                            const errorObj = errorEvent.target && errorEvent.target.error;
+                            const errorCode = errorObj ? errorObj.code : 'N/A';
+                            const errorMessage = errorObj ? errorObj.message : 'Unknown error';
+                            console.error(`FileReader error for ${file.name} (${type}):`, errorEvent, errorObj, `Code: ${errorCode}`, `Message: ${errorMessage}`);
+                            showMessage(`Critical error reading file ${file.name}. Code: ${errorCode}. Message: ${errorMessage}`, 'error');
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        console.warn(`File ${file.name} (${type}) is not an image. Type: ${file.type}`);
+                        showMessage(`File ${file.name} is not an image and was skipped.`, 'warning');
+                    }
+                });
+                if (e.target && e.target.type === 'file') e.target.value = null; 
+            }
+
+            updatePhotoPreview(type) { 
+                const previewDivId = type === 'inspection' ? 'photoPreviewInspection' : 'photoPreviewWorkDone';
+                const photoArray = type === 'inspection' ? this.inspectionPhotos : this.workDonePhotos;
+                
+                const preview = document.getElementById(previewDivId);
+                if (!preview) { console.error(`${previewDivId} element not found!`); return; }
+                preview.innerHTML = ''; 
+                console.log(`Updating photo preview for ${type}. Number of photos: ${photoArray.length}`);
+
+                photoArray.forEach((photo, index) => {
+                    console.log(`Previewing photo ${index} for ${type}: ${photo.name}, Data starts with: ${photo.data ? String(photo.data).substring(0, 30) : 'No data'}`);
+                    if (!photo.data || typeof photo.data !== 'string' || !photo.data.startsWith('data:image/')) {
+                        console.error(`Invalid data for photo ${photo.name} in updatePhotoPreview (${type}).`);
+                        const errorItem = document.createElement('div');
+                        errorItem.className = 'photo-item shadow-md text-red-500 p-2 text-xs flex items-center justify-center';
+                        errorItem.textContent = `Error: Invalid data for ${photo.name}`;
+                        preview.appendChild(errorItem);
+                        return; 
+                    }
+                    const photoItem = document.createElement('div');
+                    photoItem.className = 'photo-item shadow-md';
+                    const img = document.createElement('img'); 
+                    img.src = photo.data; img.alt = photo.name;
+                    img.onerror = () => {
+                        console.error(`Image load error in preview for (${type}):`, photo.name, "Data attempted:", photo.data ? String(photo.data).substring(0,100) + "..." : "No data string");
+                        photoItem.innerHTML = ''; 
+                        const errorText = document.createElement('p');
+                        errorText.className = 'text-red-500 text-xs p-1 text-center';
+                        errorText.textContent = `Load error: ${photo.name}`;
+                        photoItem.appendChild(errorText);
+                    };
+                    const removeButton = document.createElement('button'); 
+                    removeButton.className = 'photo-remove'; removeButton.innerHTML = '<i class="fas fa-times"></i>'; removeButton.type = 'button'; 
+                    removeButton.addEventListener('click', () => this.removePhoto(type, index));
+                    photoItem.appendChild(img); photoItem.appendChild(removeButton);
+                    preview.appendChild(photoItem);
+                });
+            }
+
+            removePhoto(type, index) { 
+                const photoArray = type === 'inspection' ? this.inspectionPhotos : this.workDonePhotos;
+                photoArray.splice(index, 1); 
+                this.updatePhotoPreview(type); 
+            }
+
+            async handleAddressInput(e) { 
+                const query = e.target && e.target.value;
+                const suggestionsDiv = document.getElementById('addressSuggestions');
+                if (!suggestionsDiv) return;
+                if (!query || query.length < 3) { suggestionsDiv.style.display = 'none'; return; }
+                const suggestions = this.getCaliforniaAddressSuggestions(query); 
+                this.displayAddressSuggestions(suggestions);
+            }
+
+            getCaliforniaAddressSuggestions(query) {
+                console.log("Using placeholder address suggestions for query:", query);
+                const californiaAddresses = [ 
+                    '123 Main St, Los Angeles, CA 90210', '456 Oak Ave, San Francisco, CA 94102',
+                    '789 Pine St, San Diego, CA 92101', '321 Elm Dr, Sacramento, CA 95814',
+                    '1001 Hollywood Blvd, Los Angeles, CA 90028', '200 Market St, San Francisco, CA 94105'
+                ];
+                return californiaAddresses.filter(address => 
+                    address.toLowerCase().includes(query.toLowerCase())
+                ).slice(0, 5);
+            }
+
+            displayAddressSuggestions(suggestions) {
+                const suggestionsDiv = document.getElementById('addressSuggestions');
+                if (!suggestionsDiv) return; suggestionsDiv.innerHTML = '';
+                if (suggestions.length === 0) { suggestionsDiv.style.display = 'none'; return; }
+                suggestions.forEach(suggestion => {
+                    const item = document.createElement('div'); item.className = 'address-suggestion'; item.textContent = suggestion;
+                    item.addEventListener('click', () => { const input = document.getElementById('address'); if (input) input.value = suggestion; suggestionsDiv.style.display = 'none'; });
+                    suggestionsDiv.appendChild(item);
+                });
+                suggestionsDiv.style.display = 'block';
+            }
+
+            async saveData() {
+                console.log("saveData called.");
+                if (!currentUserId) { showMessage('User not authenticated. Cannot save data.', 'error'); return; }
+                if (!this.db) { showMessage('Database not initialized. Cannot save data.', 'error'); return; }
+                const formData = this.getFormData();
+                if (!formData.customerName || !formData.address || !formData.serviceDate) { showMessage('Please fill in required fields (Customer Name, Address, Service Date).', 'error'); return; }
+                const reportDocRef = doc(this.db, "artifacts", appId, "users", currentUserId, "ductInspectionReports", "currentReport");
+                try { await setDoc(reportDocRef, formData); showMessage('Data saved successfully to Firebase!', 'success'); } catch (error) {
+                    console.error("Error saving data to Firestore: ", error); showMessage('Error saving data. Check console.', 'error');
+                }
+            }
+
+            async loadSavedData() {
+                console.log("loadSavedData called.");
+                if (!currentUserId) { console.log("loadSavedData: No currentUserId, returning."); return; }
+                if (!this.db) { console.warn("loadSavedData: Database not initialized, returning."); return; }
+                const reportDocRef = doc(this.db, "artifacts", appId, "users", currentUserId, "ductInspectionReports", "currentReport");
+                try {
+                    const docSnap = await getDoc(reportDocRef);
+                    if (docSnap.exists()) { const data = docSnap.data(); this.populateForm(data); showMessage('Data loaded successfully!', 'info'); } 
+                    else { console.log("No saved data found."); }
+                } catch (error) { console.error("Error loading data: ", error); showMessage('Error loading saved data.', 'error');}
+            }
+
+            populateForm(data) {
+                console.log("Populating form with data:", data);
+                Object.keys(data).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') { element.checked = data[key]; } 
+                        else if (key !== 'duration') { 
+                            element.value = data[key]; 
+                        }
+                    }
+                });
+                const checklist = document.querySelectorAll('input[name="checklist"]');
+                if (data.checklist && Array.isArray(data.checklist)) {
+                    checklist.forEach(cb => { cb.checked = data.checklist.includes(cb.value); });
+                }
+                this.inspectionPhotos = (data.inspectionPhotos && Array.isArray(data.inspectionPhotos)) ? data.inspectionPhotos : [];
+                this.workDonePhotos = (data.workDonePhotos && Array.isArray(data.workDonePhotos)) ? data.workDonePhotos : [];
+                this.updatePhotoPreview('inspection');
+                this.updatePhotoPreview('workDone');
+                if(data.serviceDate) document.getElementById('serviceDate').value = data.serviceDate;
+            }
+
+            getFormData() {
+                console.log("getFormData called.");
+                const formData = {}; const form = document.getElementById('inspectionForm'); if (!form) return formData;
+                const elements = form.querySelectorAll('input, select, textarea');
+                elements.forEach(el => {
+                    if (!el.id && !el.name) return; 
+                    const key = el.id || el.name;
+                    if (el.type === 'checkbox') {
+                        if (el.name === 'checklist') { if (!formData.checklist) formData.checklist = []; if (el.checked) formData.checklist.push(el.value); } 
+                        else { formData[key] = el.checked; }
+                    } else if (el.type !== 'file' && el.id !== 'duration') { 
+                         formData[key] = el.value; 
+                    }
+                });
+                formData.inspectionPhotos = this.inspectionPhotos; 
+                formData.workDonePhotos = this.workDonePhotos;
+                return formData;
+            }
+
+            previewReport() {
+                console.log("previewReport called.");
+                const formData = this.getFormData();
+                if (!formData.customerName || !formData.address || !formData.serviceDate) {
+                    showMessage('Fill required fields (Customer, Address, Date) before previewing.', 'error'); return;
+                }
+                const reportContent = this.generateReportHTML(formData);
+                const previewEl = document.getElementById('reportPreview');
+                const modalEl = document.getElementById('reportModal');
+                if(previewEl) previewEl.innerHTML = reportContent;
+                if(modalEl) modalEl.style.display = 'block';
+            }
+
+            generateReportHTML(data) {
+                console.log("generateReportHTML called.");
+                const checkedItems = data.checklist || [];
+                const checklistHTML = checkedItems.length > 0 
+                    ? checkedItems.map(item => `<li><i class="fas fa-check-circle text-green-500 mr-2"></i>${item}</li>`).join('')
+                    : '<li>No specific tasks selected for work phase.</li>';
+                
+                const inspectionPhotosHTML = (data.inspectionPhotos || []).map(p => {
+                    if (p.data && typeof p.data === 'string' && p.data.startsWith('data:image/')) {
+                        return `<img src="${p.data}" alt="${p.name}" class="rounded border shadow-sm m-1 max-w-[150px] h-auto">`;
+                    } return `<p class="text-red-500 m-1">Error displaying: ${p.name}</p>`;
+                }).join('');
+
+                const workDonePhotosHTML = (data.workDonePhotos || []).map(p => {
+                    if (p.data && typeof p.data === 'string' && p.data.startsWith('data:image/')) {
+                        return `<img src="${p.data}" alt="${p.name}" class="rounded border shadow-sm m-1 max-w-[150px] h-auto">`;
+                    } return `<p class="text-red-500 m-1">Error displaying: ${p.name}</p>`;
+                }).join('');
+
+                const logoUrlForPreview = "https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png";
+
+                return `
+                    <div class="report-content p-2 sm:p-4">
+                        <div class="report-header text-center mb-4 pb-4 border-b">
+                            <img src="${logoUrlForPreview}" alt="Bay Services Logo" class="report-logo-preview mx-auto" onerror="this.style.display='none'; console.error('Failed to load preview logo from URL.')">
+                            <h1 class="report-title text-xl sm:text-2xl font-bold text-gray-800">INSPECTION & WORK REPORT</h1>
+                            <p class="text-gray-600 text-sm sm:text-base"><strong>Date:</strong> ${data.serviceDate || 'N/A'}</p>
+                        </div>
+                        <div class="report-section mb-4">
+                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Customer & Service Information</h3>
+                            <p class="text-sm sm:text-base"><strong>Name:</strong> ${data.customerName || 'N/A'}</p>
+                            <p class="text-sm sm:text-base"><strong>Phone:</strong> ${data.phoneNumber || 'N/A'}</p>
+                            <p class="text-sm sm:text-base"><strong>Email:</strong> ${data.email || 'N/A'}</p>
+                            <p class="text-sm sm:text-base"><strong>Address:</strong> ${data.address || 'N/A'}</p>
+                            <p class="text-sm sm:text-base"><strong>Service Type:</strong> ${data.serviceType || 'N/A'}</p>
+                            <p class="text-sm sm:text-base"><strong>Technician:</strong> ${data.technician || 'N/A'}</p>
+                        </div>
+                        
+                        <h2 class="report-phase-title">Phase 1: Pre-Service Inspection Report</h2>
+                        <div class="report-section mb-4">
+                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Initial Observations & Findings</h3>
+                            <p class="whitespace-pre-wrap text-sm sm:text-base">${data.preInspectionNotes || 'No specific pre-inspection notes provided.'}</p>
+                        </div>
+                        ${(data.inspectionPhotos && data.inspectionPhotos.length > 0) ? `
+                        <div class="report-section mb-4">
+                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Inspection Photos</h3>
+                            <div class="report-photos flex flex-wrap gap-2">${inspectionPhotosHTML}</div>
+                        </div>` : ''}
+
+                        <h2 class="report-phase-title">Phase 2: Work Done & Recommendations Report</h2>
+                        <div class="report-section mb-4">
+                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Work Performed Checklist</h3>
+                            <ul class="list-none pl-0 mb-2 text-sm sm:text-base">${checklistHTML}</ul>
+                        </div>
+                        ${data.workPerformed ? `
+                        <div class="report-section mb-4">
+                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Additional Work Performed Details</h3>
+                            <p class="whitespace-pre-wrap text-sm sm:text-base">${data.workPerformed}</p>
+                        </div>` : ''}
+                        ${data.recommendations ? `
+                        <div class="report-section mb-4">
+                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Recommendations for Customer</h3>
+                            <p class="whitespace-pre-wrap text-sm sm:text-base">${data.recommendations}</p>
+                        </div>` : ''}
+                        ${(data.workDonePhotos && data.workDonePhotos.length > 0) ? `
+                        <div class="report-section mb-4">
+                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Work Done Photos</h3>
+                            <div class="report-photos flex flex-wrap gap-2">${workDonePhotosHTML}</div>
+                        </div>` : ''}
+
+                        <div class="report-section mt-6 pt-4 border-t">
+                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Service Completion</h3>
+                            <p class="text-sm sm:text-base">This report certifies that the above services have been completed by Bay Services on ${data.serviceDate || 'the specified date'}.</p><br>
+                            <p class="text-sm sm:text-base"><strong>Technician Signature:</strong> ${data.technician || '_________________'}</p>
+                            <p class="mt-1 text-sm sm:text-base"><strong>Customer Signature:</strong> _________________</p>
+                        </div>
+                    </div>`;
+            }
+            
+            async generatePDF() {
+                console.log("generatePDF called.");
+                const formData = this.getFormData();
+                if (!formData.customerName || !formData.address || !formData.serviceDate) {
+                    showMessage('Fill required fields before PDF generation.', 'error'); return;
+                }
+                console.log("Generating PDF. Inspection photos:", (this.inspectionPhotos && this.inspectionPhotos.length), "WorkDone photos:", (this.workDonePhotos && this.workDonePhotos.length));
+
+                const logoUrlForPdf = "https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png";
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                let yPosition = 15; 
+                const leftMargin = 15; const rightMargin = 15;
+                const contentWidth = pdf.internal.pageSize.getWidth() - leftMargin - rightMargin;
+                
+                const lineSpacing = 5.5; 
+                const sectionSpacing = 6;
+                const phaseTitleFontSize = 13; 
+                const sectionTitleFontSize = 11; 
+                const regularFontSize = 9.5;   
+                const smallFontSize = 8;
+
+                const websiteText = "www.thebayservices.com";
+
+                const logoTopWidth = 45; 
+                let logoTopHeight = 15;  
+                const logoTopMargin = 10; 
+
+                const addText = (text, x, y, options = {}) => {
+                    const fontSize = options.fontSize || regularFontSize; 
+                    const style = options.style || 'normal';
+                    const color = options.color || '#000000';
+                    const align = options.align || 'left';
+
+                    try {
+                        pdf.setFont("Inter", style);
+                    } catch (e) {
+                        pdf.setFont(undefined, style); 
+                    }
+                    pdf.setFontSize(fontSize);
+                    pdf.setTextColor(color);
+                    const splitText = pdf.splitTextToSize(String(text || 'N/A'), contentWidth);
+                    pdf.text(splitText, x, y, { align: align });
+                    return y + (splitText.length * (fontSize * 0.38)) + (splitText.length > 1 ? 0.5 : 0); 
+                };
+
+                const addPhaseTitle = (title, y) => {
+                    y = checkPageBreak(y, phaseTitleFontSize + 4); 
+                    try {
+                        pdf.setFont("Inter", "bold");
+                    } catch (e) { pdf.setFont(undefined, "bold"); }
+                    pdf.setFontSize(phaseTitleFontSize); 
+                    pdf.setTextColor(28, 64, 175); 
+                    pdf.text(title, pdf.internal.pageSize.getWidth() / 2, y, { align: 'center' });
+                    y += phaseTitleFontSize * 0.38 + 1.5; 
+                    pdf.setDrawColor(147, 197, 253); 
+                    pdf.setLineWidth(0.5);
+                    pdf.line(leftMargin, y, leftMargin + contentWidth, y);
+                    return y + 3; 
+                };
+
+                const addSectionTitlePDF = (title, y) => {
+                    y = addText(title, leftMargin, y, { fontSize: sectionTitleFontSize, style: 'bold', color: '#3B82F6' }); 
+                    pdf.setDrawColor(219, 234, 254); 
+                    pdf.setLineWidth(0.3);
+                    pdf.line(leftMargin, y + 0.5, leftMargin + contentWidth, y + 0.5);
+                    return y + 2; 
+                };
+
+                const checkPageBreak = (currentY, neededSpace = 20, pageTopMarginForNewPage = logoTopMargin + logoTopHeight + 5) => {
+                    if (currentY + neededSpace > pdf.internal.pageSize.getHeight() - 20) { 
+                        pdf.addPage();
+                        return pageTopMarginForNewPage; 
+                    }
+                    return currentY;
+                };
+
+                const addPhotosToPDF = (photos, currentY, pageTopMarginForNewPage) => {
+                    if (photos && photos.length > 0) {
+                        currentY = checkPageBreak(currentY, 0, pageTopMarginForNewPage); 
+                        currentY += lineSpacing * 0.5;
+                        const photoBoxMaxWidth = 50; const photoBoxMaxHeight = 50; const photoMargin = 4;
+                        let currentX = leftMargin; let rowMaxHeight = 0;
+
+                        for (let i = 0; i < photos.length; i++) {
+                            const photo = photos[i];
+                            if (!photo.data || typeof photo.data !== 'string' || !photo.data.startsWith('data:image/')) {
+                                console.error(`PDF: Invalid data for photo ${photo.name}. Skipping.`);
+                                currentY = checkPageBreak(currentY, lineSpacing, pageTopMarginForNewPage);
+                                pdf.setTextColor(255, 0, 0);
+                                let tempY = addText(`[Skipped: ${photo.name.substring(0,20)} (invalid data)]`, currentX, currentY, {fontSize: smallFontSize});
+                                pdf.setTextColor(0,0,0);
+                                currentX += (photoBoxMaxWidth / 2) + photoMargin;
+                                rowMaxHeight = Math.max(rowMaxHeight, (tempY - currentY));
+                                if (currentX > leftMargin + contentWidth - (photoBoxMaxWidth/2)) {
+                                    currentX = leftMargin; currentY += rowMaxHeight + photoMargin; rowMaxHeight = 0;
+                                }
+                                continue;
+                            }
+                            currentY = checkPageBreak(currentY, photoBoxMaxHeight + photoMargin, pageTopMarginForNewPage);
+                            try {
+                                const props = pdf.getImageProperties(photo.data);
+                                let newWidth = props.width; let newHeight = props.height;
+                                if (newWidth > photoBoxMaxWidth) { newWidth = photoBoxMaxWidth; newHeight = (props.height * newWidth) / props.width; }
+                                if (newHeight > photoBoxMaxHeight) { newHeight = photoBoxMaxHeight; newWidth = (props.width * newHeight) / props.height; }
+                                if (currentX + newWidth > leftMargin + contentWidth) {
+                                    currentX = leftMargin; currentY += rowMaxHeight + photoMargin; rowMaxHeight = 0;
+                                    currentY = checkPageBreak(currentY, photoBoxMaxHeight + photoMargin, pageTopMarginForNewPage);
+                                }
+                                pdf.addImage(photo.data, props.fileType, currentX, currentY, newWidth, newHeight);
+                                currentX += newWidth + photoMargin; rowMaxHeight = Math.max(rowMaxHeight, newHeight);
+                            } catch (imgError) {
+                                console.error("Error adding image to PDF:", photo.name, imgError);
+                                if (currentX + 20 > leftMargin + contentWidth) { currentX = leftMargin; currentY += rowMaxHeight + photoMargin; rowMaxHeight = 0;}
+                                pdf.setFontSize(smallFontSize).setTextColor(255,0,0); pdf.text(`[No img: ${photo.name.substring(0,10)}]`, currentX, currentY + 10);
+                                pdf.setFontSize(regularFontSize).setTextColor(0,0,0); currentX += 20 + photoMargin; rowMaxHeight = Math.max(rowMaxHeight, 20);
+                            }
+                        }
+                        currentY += rowMaxHeight + sectionSpacing;
+                    }
+                    return currentY;
+                };
+
+                const mainPdfContent = async (loadedLogoImgObject) => {
+                    try {
+                        let pageTopMarginForContent = logoTopMargin + 5; 
+                        if (loadedLogoImgObject && loadedLogoImgObject.width > 0) {
+                            logoTopHeight = (loadedLogoImgObject.height * logoTopWidth) / loadedLogoImgObject.width;
+                            pageTopMarginForContent = logoTopMargin + logoTopHeight + 5; 
+                        }
+                        
+                        yPosition = pageTopMarginForContent;
+
+                        let titleYPosition = pageTopMarginForContent; 
+                        if (!loadedLogoImgObject) { 
+                            titleYPosition = 15; 
+                        }
+                        
+                        try { pdf.setFont("Inter", "bold"); } catch(e){ pdf.setFont(undefined, "bold");}
+                        pdf.setFontSize(15); 
+                        pdf.setTextColor(55, 65, 81); 
+                        pdf.text('INSPECTION & WORK REPORT', pdf.internal.pageSize.getWidth() / 2, titleYPosition, { align: 'center' });
+                        
+                        titleYPosition += (15 * 0.38) + 1.5;
+                        try { pdf.setFont("Inter", "normal"); } catch(e){ pdf.setFont(undefined, "normal");}
+                        pdf.setFontSize(regularFontSize); 
+                        pdf.setTextColor(107, 114, 128); 
+                        pdf.text(`Service Date: ${formData.serviceDate || 'N/A'}`, pdf.internal.pageSize.getWidth() / 2, titleYPosition, { align: 'center' });
+                        
+                        yPosition = titleYPosition + regularFontSize * 0.38 + sectionSpacing;
+
+                        yPosition = addSectionTitlePDF('Customer & Service Information', yPosition);
+                        yPosition = addText(`Name: ${formData.customerName || 'N/A'}`, leftMargin, yPosition, {color: '#374151'}); 
+                        yPosition += lineSpacing;
+                        yPosition = addText(`Phone: ${formData.phoneNumber || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
+                        yPosition += lineSpacing;
+                        yPosition = addText(`Email: ${formData.email || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
+                        yPosition += lineSpacing;
+                        yPosition = addText(`Address: ${formData.address || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
+                        yPosition += lineSpacing;
+                        yPosition = addText(`Service Type: ${formData.serviceType || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
+                        yPosition += lineSpacing;
+                        yPosition = addText(`Technician: ${formData.technician || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
+                        yPosition += sectionSpacing;
+
+                        yPosition = addPhaseTitle('PHASE 1: PRE-SERVICE INSPECTION REPORT', yPosition);
+                        yPosition = addSectionTitlePDF('Initial Observations & Findings', yPosition);
+                        yPosition = addText(formData.preInspectionNotes || 'No specific pre-inspection notes provided.', leftMargin, yPosition, {color: '#374151'});
+                        yPosition += lineSpacing;
+                        if (this.inspectionPhotos && this.inspectionPhotos.length > 0) {
+                            yPosition = checkPageBreak(yPosition, 0, pageTopMarginForContent);
+                            yPosition = addSectionTitlePDF('Inspection Photos (Before Service)', yPosition);
+                            yPosition = addPhotosToPDF(this.inspectionPhotos, yPosition, pageTopMarginForContent);
+                        }
+                        yPosition += sectionSpacing;
+
+                        yPosition = addPhaseTitle('PHASE 2: WORK DONE & RECOMMENDATIONS REPORT', yPosition);
+
+                        yPosition = addSectionTitlePDF('Work Performed Checklist', yPosition);
+                        const checklistItems = formData.checklist || [];
+                        if (checklistItems.length > 0) {
+                            checklistItems.forEach(item => {
+                                yPosition = checkPageBreak(yPosition, lineSpacing, pageTopMarginForContent);
+                                yPosition = addText(`✓ ${item}`, leftMargin, yPosition); // Removed yPosition increment here
+                                yPosition += lineSpacing * 0.7; 
+                            });
+                        } else {
+                            yPosition = addText('No specific tasks selected from checklist.', leftMargin, yPosition, {color: '#374151'});
+                        }
+                        yPosition += lineSpacing;
+
+                        if (formData.workPerformed) {
+                            yPosition = checkPageBreak(yPosition, 0, pageTopMarginForContent);
+                            yPosition = addSectionTitlePDF('Additional Work Performed Details', yPosition);
+                            yPosition = addText(formData.workPerformed, leftMargin, yPosition, {color: '#374151'});
+                            yPosition += sectionSpacing;
+                        }
+
+                        if (formData.recommendations) {
+                            yPosition = checkPageBreak(yPosition, 0, pageTopMarginForContent);
+                            yPosition = addSectionTitlePDF('Recommendations for Customer', yPosition);
+                            yPosition = addText(formData.recommendations, leftMargin, yPosition, {color: '#374151'});
+                            yPosition += sectionSpacing;
+                        }
+
+                        if (this.workDonePhotos && this.workDonePhotos.length > 0) {
+                            yPosition = checkPageBreak(yPosition, 0, pageTopMarginForContent);
+                            yPosition = addSectionTitlePDF('Work Done Photos (After Service)', yPosition);
+                            yPosition = addPhotosToPDF(this.workDonePhotos, yPosition, pageTopMarginForContent);
+                        }
+                        yPosition += sectionSpacing;
+
+                        yPosition = checkPageBreak(yPosition, 40, pageTopMarginForContent);
+                        yPosition = addSectionTitlePDF('Service Completion', yPosition);
+                        const completionText = `This report certifies that the above services have been completed by Bay Services on ${formData.serviceDate || 'the specified date'}.`;
+                        yPosition = addText(completionText, leftMargin, yPosition, {color: '#374151'});
+                        yPosition += lineSpacing * 1.5;
+                        yPosition = addText(`Technician Signature: ${formData.technician || '_________________________'}`, leftMargin, yPosition, {color: '#374151'});
+                        yPosition += lineSpacing * 1.5;
+                        yPosition = addText(`Customer Signature: _________________________`, leftMargin, yPosition, {color: '#374151'});
+
+                        const totalPages = pdf.internal.getNumberOfPages();
+                        for (let i = 1; i <= totalPages; i++) {
+                            pdf.setPage(i);
+                            if (loadedLogoImgObject) {
+                                try {
+                                    const pageWidth = pdf.internal.pageSize.getWidth();
+                                    let currentLogoTopHeight = logoTopHeight; 
+                                    if (loadedLogoImgObject.width > 0) { 
+                                         currentLogoTopHeight = (loadedLogoImgObject.height * logoTopWidth) / loadedLogoImgObject.width;
+                                    }
+
+                                    pdf.addImage(
+                                        loadedLogoImgObject,
+                                        'PNG',
+                                        (pageWidth - logoTopWidth) / 2, 
+                                        logoTopMargin,                  
+                                        logoTopWidth,
+                                        currentLogoTopHeight
+                                    );
+                                } catch (e) { console.error("Error adding logo to PDF page " + i + ":", e); }
+                            }
+                            try { pdf.setFont("Inter", "normal"); } catch(e){ pdf.setFont(undefined, "normal");}
+                            pdf.setFontSize(smallFontSize).setTextColor(120, 120, 120);
+                            pdf.text(websiteText, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
+                            pdf.text(`Page ${i} of ${totalPages}`, leftMargin, pdf.internal.pageSize.getHeight() - 10);
+                        }
+                        pdf.save(`BayServices_Report_${formData.customerName.replace(/\s+/g, '_')}_${formData.serviceDate}.pdf`);
+                        showMessage('PDF generated successfully!', 'success');
+                    } catch (pdfError) {
+                        console.error("Critical error during PDF content generation:", pdfError);
+                        showMessage("Failed to generate PDF content. See console.", "error");
+                    }
+                };
+
+                const logoImgForPdf = new Image();
+                logoImgForPdf.crossOrigin = 'anonymous';
+                logoImgForPdf.onload = async () => {
+                    console.log("Logo image for PDF (from URL) loaded successfully.");
+                    await mainPdfContent(logoImgForPdf);
+                };
+                logoImgForPdf.onerror = async () => {
+                    console.error("Failed to load logo image from URL for PDF. Proceeding without logo.");
+                    showMessage('Could not load company logo for PDF (URL load failed). PDF will be generated without it.', 'warning');
+                    await mainPdfContent(null); 
+                };
+                logoImgForPdf.src = logoUrlForPdf;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM fully loaded and parsed.");
+            const indicator = document.getElementById('javascript-running-indicator');
+            if(indicator) indicator.style.display = 'block';
+            
+            if (db && auth) { // Ensure Firebase services are initialized
+                if (!appInstance) { 
+                    console.log("Creating App instance in DOMContentLoaded (db and auth available).");
+                    appInstance = new DuctInspectionApp(db);
+                    appInstance.init(); 
+                }
+                // Attempt initial sign-in after app instance is ready
+                attemptSignIn().catch(error => { 
+                    console.error("Error during initial sign-in attempt from DOMContentLoaded:", error);
+                    showMessage("Sign-in attempt failed: " + (error.message || "Unknown error"), "error");
+                });
+            } else {
+                console.error("DOMContentLoaded: Firebase db or auth is not initialized. App instance NOT created. Firebase init likely failed.");
+                // Alert should have been shown by Firebase init catch block.
+                // Add an extra alert here just in case.
+                alert("CRITICAL: App cannot start because Firebase connection failed. Please check configuration and network.");
+            }
+        });
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+
+    </script>
+</body>
+</html>
+```
+
+---
+
+**2. Web App Manifest (`manifest.json`)**
+
+Create a new file named `manifest.json` in the same directory as your HTML file and paste the following content into it. You'll need to create an `icons` folder and place appropriately sized icons there.
+
+```json
+{
+  "name": "Bay Services Inspection Report",
+  "short_name": "BayReport",
+  "description": "Application for creating inspection and work reports for Bay Services.",
+  "start_url": "./index.html", /* Assuming your HTML file is index.html or adjust as needed */
+  "display": "standalone",
+  "background_color": "#f0f4f8",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+```
+
+**Important for `manifest.json`:**
+* **`start_url`**: Make sure this points to your main HTML file. If your file is named differently than `index.html`, change it. Using `./` makes it relative.
+* **`icons`**: You need to create these icon files (e.g., using your company logo and an icon generator tool) and place them in an `icons` folder (or adjust the paths). Browsers use these for the home screen icon.
+
+---
+
+**3. Service Worker (`sw.js`)**
+
+Create a new file named `sw.js` in the same directory as your HTML file and paste the following content into it. This is a basic "cache-first" service worker for the app shell.
+
+```javascript
+const CACHE_NAME = 'bay-report-app-v1'; // Change version if you update assets
+const urlsToCache = [
+  './', // If start_url is './index.html', this caches the root
+  './index.html', // Or whatever your main HTML file is named
+  // Add other core HTML files if you have multiple pages for the shell
+  // CSS files (if you compile Tailwind to a static CSS file, add it here)
+  // Main JavaScript files (if you bundle your JS, add the bundle path)
+  'https://cdn.tailwindcss.com', // Caching CDN resources can be tricky due to opaque responses, but let's try
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+  'https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7W0Q5nw.woff2', // Example woff2 file for Inter, actual URLs may vary or be multiple
+  // Add your icon paths from manifest.json
+  'icons/icon-72x72.png',
+  'icons/icon-96x96.png',
+  'icons/icon-128x128.png',
+  'icons/icon-144x144.png',
+  'icons/icon-152x152.png',
+  'icons/icon-192x192.png',
+  'icons/icon-384x384.png',
+  'icons/icon-512x512.png',
+  'https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png' // Your company logo
+];
+
+// Install event - cache core assets
+self.addEventListener('install', event => {
+  console.log('Service Worker: Installing...');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Service Worker: Caching app shell');
+        // Add all URLs, but be mindful of opaque responses from CDNs.
+        // For CDNs, it's often better to let the browser cache them, or use workbox for more complex strategies.
+        // However, for basic offline shell, this can work.
+        const cachePromises = urlsToCache.map(urlToCache => {
+          return fetch(new Request(urlToCache, { mode: 'cors' })) // Attempt CORS request for CDNs
+            .then(response => {
+              if (!response.ok && response.type !== 'opaque') { // Opaque responses for CDN might not be "ok" but are cacheable
+                console.error(`Service Worker: Failed to fetch (and will not cache) ${urlToCache}. Status: ${response.status}`);
+                return Promise.resolve(); // Don't break the whole cache.addAll
+              }
+              // If it's an opaque response, clone it carefully.
+              // For regular responses, just use it.
+              return cache.put(urlToCache, response.clone());
+            })
+            .catch(err => {
+              console.error(`Service Worker: Error fetching/caching ${urlToCache}`, err);
+              return Promise.resolve();
+            });
+        });
+        return Promise.all(cachePromises);
+      })
+      .then(() => {
+        console.log('Service Worker: App shell cached successfully');
+        return self.skipWaiting(); // Activate the new service worker immediately
+      })
+      .catch(error => {
+        console.error('Service Worker: Caching failed', error);
+      })
+  );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', event => {
+  console.log('Service Worker: Activating...');
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+            console.log('Service Worker: Clearing old cache', cache);
+            return caches.delete(cache);
+          }
+        })
+      );
+    }).then(() => {
+        console.log('Service Worker: Activated successfully and old caches cleared.');
+        return self.clients.claim(); // Take control of all open clients
+    })
+  );
+});
+
+// Fetch event - serve cached content when offline (cache-first for listed assets)
+self.addEventListener('fetch', event => {
+  // Let browser handle requests for Firebase and other dynamic external services
+  if (event.request.url.startsWith('https://firestore.googleapis.com') || 
+      event.request.url.startsWith('https://firebaseauth.googleapis.com') ||
+      event.request.url.includes('YOUR_PROJECT_ID.firebaseapp.com')) { // Adjust if you use other Firebase services
+    // For Firebase and other dynamic APIs, always go to the network.
+    // You might implement more sophisticated offline strategies for Firebase data later if needed.
+    // console.log('Service Worker: Bypassing cache for Firebase request:', event.request.url);
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // For CDN resources that might have opaque responses, a network-first or stale-while-revalidate might be better
+  // but for a simple offline shell, cache-first can be acceptable if they get cached.
+  if (event.request.url.startsWith('https://cdn.tailwindcss.com') ||
+      event.request.url.startsWith('https://cdnjs.cloudflare.com') ||
+      event.request.url.startsWith('https://fonts.googleapis.com') ||
+      event.request.url.startsWith('https://fonts.gstatic.com')) {
+    
+    event.respondWith(
+      caches.match(event.request).then(cachedResponse => {
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          // Check if we received a valid response to cache
+          if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        }).catch(error => {
+            console.warn('Service Worker: Network request failed for CDN, serving from cache if available.', event.request.url, error);
+            return cachedResponse; // Serve from cache if network fails for CDN
+        });
+        return cachedResponse || fetchPromise; // Serve from cache if available, else network
+      })
+    );
+    return;
+  }
+  
+  // Default cache-first strategy for app shell resources
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        if (response) {
+          // console.log('Service Worker: Serving from cache', event.request.url);
+          return response;
+        }
+        // console.log('Service Worker: Fetching from network', event.request.url);
+        return fetch(event.request).then(
+          networkResponse => {
+            // Optional: Cache new resources dynamically if they are not in urlsToCache
+            // Be careful with this to not cache everything.
+            // if (networkResponse && networkResponse.ok && !urlsToCache.includes(event.request.url) && event.request.method === 'GET') {
+            //   const responseToCache = networkResponse.clone();
+            //   caches.open(CACHE_NAME).then(cache => {
+            //     cache.put(event.request, responseToCache);
+            //   });
+            // }
+            return networkResponse;
+          }
+        ).catch(error => {
+          console.error('Service Worker: Fetch failed; returning offline page if available or error.', error);
+          // You could return a generic offline.html page here if you have one
+          // return caches.match('./offline.html'); 
+        });
+      })
+  );
+});
+```
