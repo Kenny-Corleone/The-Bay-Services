@@ -1188,5 +1188,20 @@
         }
 
     </script>
+    <h2>Enter address</h2>
+<input type="search" id="address-input" placeholder="Enter address..." />
+
+<!-- Load Algolia Places library -->
+<script src="https://cdn.jsdelivr.net/npm/places.js@1.19.0"></script>
+<script>
+  // Initialize Algolia Places autocomplete
+  var placesAutocomplete = places({
+    appId: 'plG2S0C5GHQ6',  // Demo appId — no registration needed
+    apiKey: '36d281fb703b0c9c482c6aaeaefbebe3',  // Demo apiKey
+    container: document.querySelector('#address-input'),
+    countries: ['us']  // Limit suggestions to USA
+  });
+</script>
+
 </body>
 </html>
