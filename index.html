@@ -7,9 +7,9 @@
     
     <link rel="manifest" href="manifest.json">
     
-    <meta name="theme-color" content="#3B82F6"> 
+    <meta name="theme-color" content="#3B82F6">
 
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png"> 
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 
     <link id="favicon" rel="icon" href="https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png" type="image/png">
     <script src="https://cdn.tailwindcss.com" defer></script>
@@ -242,19 +242,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div class="form-group">
                         <label for="customerName" class="form-label">Customer Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="customerName" class="form-input" required>
+                        <input type="text" id="customerName" class="form-input" required autocomplete="name">
                     </div>
                     <div class="form-group">
                         <label for="phoneNumber" class="form-label">Phone Number</label>
-                        <input type="tel" id="phoneNumber" class="form-input">
+                        <input type="tel" id="phoneNumber" class="form-input" autocomplete="tel">
                     </div>
                     <div class="form-group md:col-span-2">
                         <label for="email" class="form-label">Email Address</label>
-                        <input type="email" id="email" class="form-input">
+                        <input type="email" id="email" class="form-input" autocomplete="email">
                     </div>
                     <div class="form-group relative md:col-span-2"> 
                         <label for="address" class="form-label">Service Address <span class="text-red-500">*</span></label>
-                        <input type="text" id="address" class="form-input" required autocomplete="off">
+                        <input type="text" id="address" class="form-input" required autocomplete="street-address">
                         <div id="addressSuggestions" class="address-suggestions hidden"></div>
                     </div>
                      <div class="form-group">
@@ -264,20 +264,23 @@
                     <div class="form-group">
                         <label for="serviceType" class="form-label">Service Type</label>
                         <select id="serviceType" class="form-select">
-                            <option value="Duct Inspection">Duct Inspection</option>
-                            <option value="Duct Cleaning">Duct Cleaning</option>
-                            <option value="Duct Repair">Duct Repair</option>
-                            <option value="Full Service">Full Service (Inspect & Clean)</option>
+                            <option value="Air Duct Cleaning">Air Duct Cleaning</option>
+                            <option value="Dryer Vent Cleaning SIDE-BY-SIDE">Dryer Vent Cleaning SIDE-BY-SIDE</option>
+                            <option value="Chimney Sweep">Chimney Sweep</option>
+                            <option value="Furnace Cleaning with Blower">Furnace Cleaning with Blower</option>
+                            <option value="Kitchen Range Hood Cleaning">Kitchen Range Hood Cleaning</option>
+                            <option value="Dryer Vent Cleaning STACKED">Dryer Vent Cleaning STACKED</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="technician" class="form-label">Technician Name</label>
                         <select id="technician" class="form-select">
                             <option value="">Select Technician</option>
-                            <option value="Riz">Riz</option>
                             <option value="Alex">Alex</option>
-                            <option value="Orkhan">Orkhan</option>
+                            <option value="Riz">Riz</option>
                             <option value="Vusal">Vusal</option>
+                            <option value="Orkhan">Orkhan</option>
+                            <option value="Vance">Vance</option>
                         </select>
                     </div>
                 </div>
@@ -287,7 +290,13 @@
                 <legend class="text-xl font-bold text-blue-700 px-2">Phase 1: Pre-Service Inspection Report</legend>
                 <div class="form-group mt-4">
                     <label for="preInspectionNotes" class="form-label">Initial Observations & Findings</label>
-                    <textarea id="preInspectionNotes" class="form-textarea" rows="4" placeholder="Describe the condition of the ducts, any visible issues, customer concerns, etc."></textarea>
+                    <div id="preInspectionChecklist" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-4">
+                        <!-- Dynamic checklist will be populated here -->
+                    </div>
+                    <div class="mt-4">
+                        <label for="otherObservations" class="form-label">Other observations (please specify):</label>
+                        <textarea id="otherObservations" class="form-textarea" rows="2" placeholder="Enter any additional observations..."></textarea>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Inspection Photos (Before Service)</label>
@@ -305,16 +314,12 @@
                 <legend class="text-xl font-bold text-green-700 px-2">Phase 2: Work Done & Recommendations Report</legend>
                 <div class="form-group mt-4">
                     <label class="form-label">Work Performed Checklist</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2"> 
-                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Visual Inspection of Ducts (Post-Service)" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Visual Inspection (Post-Service)</label>
-                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Airflow Test (Post-Service)" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Airflow Test (Post-Service)</label>
-                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Filter Check/Replacement" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Filter Check/Replacement</label>
-                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Supply Vent Cleaning" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Supply Vent Cleaning</label>
-                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Return Vent Cleaning" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Return Vent Cleaning</label>
-                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Main Trunk Line Cleaning" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Main Trunk Line Cleaning</label>
-                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Sanitization Applied" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Sanitization Applied</label>
-                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Debris Removal" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Debris Removal</label>
-                        <label class="checkbox-label"><input type="checkbox" name="checklist" value="Component Repair (Specify Below)" class="form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500"> Component Repair (Specify)</label>
+                    <div id="workPerformedChecklist" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-4">
+                        <!-- Dynamic checklist will be populated here -->
+                    </div>
+                    <div class="mt-4">
+                        <label for="otherWorkPerformed" class="form-label">Other work performed (specify):</label>
+                        <textarea id="otherWorkPerformed" class="form-textarea" rows="2" placeholder="Enter any additional work performed..."></textarea>
                     </div>
                 </div>
 
@@ -339,6 +344,7 @@
             </fieldset>
 
             <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 mt-6 sm:mt-8">
+                <button type="button" id="saveBtn" class="btn btn-primary w-full sm:w-auto"><i class="fas fa-save mr-2"></i>Save Data</button>
                 <button type="button" id="previewBtn" class="btn btn-secondary w-full sm:w-auto"><i class="fas fa-eye mr-2"></i>Preview Report</button>
                 <button type="button" id="generatePdfBtn" class="btn btn-success w-full sm:w-auto"><i class="fas fa-file-pdf mr-2"></i>Generate PDF</button>
             </div>
@@ -369,7 +375,6 @@
             }
         };
 
-
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -382,7 +387,6 @@
             storageBucket: "YOUR_STORAGE_BUCKET",
             messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
             appId: "YOUR_APP_ID"
-            
         };
         const initialAuthToken = (typeof __initial_auth_token !== 'undefined') ? __initial_auth_token : null;
 
@@ -399,13 +403,9 @@
             console.error("Firebase initialization error object:", e); 
             let alertMsg = "CRITICAL: Firebase initialization failed. App may not work correctly. Check console.";
             if (e && e.message) {
-                alertMsg += " Error: " + String(e.message); 
+                alertMsg += ` Details: ${String(e.message)}`; 
             }
-            alert(alertMsg); 
-            
-            if (typeof showMessage === 'function' && document.getElementById('messageBox')) {
-                showMessage("Firebase initialization failed. App may not work correctly. See console for details.", "error");
-            }
+            alert(alertMsg);
         }
 
         let currentUserId = null;
@@ -539,9 +539,17 @@
                 } else { console.error("photoUploadWorkDoneLabel not found!"); }
 
                 const addressInput = document.getElementById('address');
-                if(addressInput) {
-                    addressInput.addEventListener('input', (e) => this.handleAddressInput(e));
-                } else { console.error("addressInput not found!"); }
+                if (addressInput) {
+                    addressInput.addEventListener('input', (e) => {
+                        const query = e.target.value;
+                        const suggestionsDiv = document.getElementById('addressSuggestions');
+                        if (!suggestionsDiv) return;
+                        if (!query || query.length < 3) { suggestionsDiv.style.display = 'none'; return; }
+                        fetchAddressSuggestions(query).then(suggestions => {
+                            displayAddressSuggestions(suggestions);
+                        });
+                    });
+                }
                 
                 document.addEventListener('click', (e) => {
                     const suggestionsBox = document.getElementById('addressSuggestions');
@@ -781,6 +789,10 @@
                          formData[key] = el.value; 
                     }
                 });
+                // Collect inspection checklist
+                formData.inspectionChecklist = Array.from(form.querySelectorAll('input[name="inspectionChecklist"]:checked')).map(cb => cb.value);
+                // Collect work performed checklist
+                formData.workPerformedChecklist = Array.from(form.querySelectorAll('input[name="workPerformedChecklist"]:checked')).map(cb => cb.value);
                 formData.inspectionPhotos = this.inspectionPhotos; 
                 formData.workDonePhotos = this.workDonePhotos;
                 return formData;
@@ -840,7 +852,13 @@
                         <h2 class="report-phase-title">Phase 1: Pre-Service Inspection Report</h2>
                         <div class="report-section mb-4">
                             <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Initial Observations & Findings</h3>
-                            <p class="whitespace-pre-wrap text-sm sm:text-base">${data.preInspectionNotes || 'No specific pre-inspection notes provided.'}</p>
+                            <div id="preInspectionChecklist" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-4">
+                                <!-- Dynamic checklist will be populated here -->
+                            </div>
+                            <div class="mt-4">
+                                <label for="otherObservations" class="form-label">Other observations (please specify):</label>
+                                <textarea id="otherObservations" class="form-textarea" rows="2" placeholder="Enter any additional observations..."></textarea>
+                            </div>
                         </div>
                         ${(data.inspectionPhotos && data.inspectionPhotos.length > 0) ? `
                         <div class="report-section mb-4">
@@ -884,276 +902,307 @@
                 if (!formData.customerName || !formData.address || !formData.serviceDate) {
                     showMessage('Fill required fields before PDF generation.', 'error'); return;
                 }
-                console.log("Generating PDF. Inspection photos:", (this.inspectionPhotos && this.inspectionPhotos.length), "WorkDone photos:", (this.workDonePhotos && this.workDonePhotos.length));
-
-                const logoUrlForPdf = "https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png";
 
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
-                let yPosition = 15; 
-                const leftMargin = 15; const rightMargin = 15;
-                const contentWidth = pdf.internal.pageSize.getWidth() - leftMargin - rightMargin;
+                // Constants for layout
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const leftMargin = 20;
+                const rightMargin = 20;
+                const contentWidth = pageWidth - leftMargin - rightMargin;
+                const topMargin = 30;
+                const bottomMargin = 30;
                 
-                const lineSpacing = 5.5; 
-                const sectionSpacing = 6;
-                const phaseTitleFontSize = 13; 
-                const sectionTitleFontSize = 11; 
-                const regularFontSize = 9.5;   
+                // Font sizes
+                const titleFontSize = 18;
+                const subtitleFontSize = 14;
+                const headerFontSize = 12;
+                const bodyFontSize = 10;
                 const smallFontSize = 8;
 
-                const websiteText = "www.thebayservices.com";
+                // Colors
+                const primaryColor = [59, 130, 246]; // Blue-600
+                const secondaryColor = [107, 114, 128]; // Gray-500
+                const accentColor = [147, 197, 253]; // Blue-300
+                const boxBgColor = [249, 250, 251]; // Gray-50
+                const boxBorderColor = [229, 231, 235]; // Gray-200
 
-                const logoTopWidth = 45; 
-                let logoTopHeight = 15;  
-                const logoTopMargin = 10; 
+                // Logo dimensions
+                const logoWidth = 60;
+                const logoHeight = 20;
+                const logoDataUrl = "data:image/png;base64,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";
 
-                const addText = (text, x, y, options = {}) => {
-                    const fontSize = options.fontSize || regularFontSize; 
-                    const style = options.style || 'normal';
-                    const color = options.color || '#000000';
-                    const align = options.align || 'left';
-
+                // Helper functions
+                const addLogo = (yPosition) => {
                     try {
-                        pdf.setFont("Inter", style);
+                        pdf.addImage(logoDataUrl, 'PNG', (pageWidth - logoWidth) / 2, yPosition, logoWidth, logoHeight);
+                        return yPosition + logoHeight + 10;
                     } catch (e) {
-                        pdf.setFont(undefined, style); 
+                        console.error("Error adding logo:", e);
+                        return yPosition;
                     }
-                    pdf.setFontSize(fontSize);
-                    pdf.setTextColor(color);
-                    const splitText = pdf.splitTextToSize(String(text || 'N/A'), contentWidth);
-                    pdf.text(splitText, x, y, { align: align });
-                    return y + (splitText.length * (fontSize * 0.38)) + (splitText.length > 1 ? 0.5 : 0); 
                 };
 
-                const addPhaseTitle = (title, y) => {
-                    y = checkPageBreak(y, phaseTitleFontSize + 4); 
-                    try {
-                        pdf.setFont("Inter", "bold");
-                    } catch (e) { pdf.setFont(undefined, "bold"); }
-                    pdf.setFontSize(phaseTitleFontSize); 
-                    pdf.setTextColor(28, 64, 175); 
-                    pdf.text(title, pdf.internal.pageSize.getWidth() / 2, y, { align: 'center' });
-                    y += phaseTitleFontSize * 0.38 + 1.5; 
-                    pdf.setDrawColor(147, 197, 253); 
-                    pdf.setLineWidth(0.5);
-                    pdf.line(leftMargin, y, leftMargin + contentWidth, y);
-                    return y + 3; 
+                const addHeader = (text, yPosition, fontSize = titleFontSize) => {
+                    pdf.setFontSize(fontSize + 2);
+                    pdf.setFont(undefined, 'bold');
+                    pdf.setTextColor(...primaryColor);
+                    pdf.text(text, pageWidth / 2, yPosition, { align: 'center' });
+                    pdf.setFont(undefined, 'normal');
+                    return yPosition + (fontSize * 0.5);
                 };
 
-                const addSectionTitlePDF = (title, y) => {
-                    y = addText(title, leftMargin, y, { fontSize: sectionTitleFontSize, style: 'bold', color: '#3B82F6' }); 
-                    pdf.setDrawColor(219, 234, 254); 
-                    pdf.setLineWidth(0.3);
-                    pdf.line(leftMargin, y + 0.5, leftMargin + contentWidth, y + 0.5);
-                    return y + 2; 
+                const addSubHeader = (text, yPosition) => {
+                    pdf.setFontSize(subtitleFontSize);
+                    pdf.setTextColor(...secondaryColor);
+                    pdf.text(text, pageWidth / 2, yPosition, { align: 'center' });
+                    return yPosition + (subtitleFontSize * 0.4);
                 };
 
-                const checkPageBreak = (currentY, neededSpace = 20, pageTopMarginForNewPage = logoTopMargin + logoTopHeight + 5) => {
-                    if (currentY + neededSpace > pdf.internal.pageSize.getHeight() - 20) { 
+                const addBoxedSection = (title, content, yPosition, options = {}) => {
+                    const padding = options.padding || 10;
+                    const margin = options.margin || 10;
+                    const boxWidth = contentWidth;
+                    let contentHeight = 0;
+                    pdf.setFontSize(bodyFontSize);
+                    const splitContent = pdf.splitTextToSize(content, boxWidth - (padding * 2));
+                    contentHeight = splitContent.length * (bodyFontSize * 0.5);
+                    pdf.setFillColor(245, 247, 252);
+                    pdf.setDrawColor(180, 190, 210);
+                    pdf.roundedRect(leftMargin, yPosition, boxWidth, contentHeight + (padding * 2) + headerFontSize, 5, 5, 'FD');
+                    pdf.setFontSize(headerFontSize + 1);
+                    pdf.setTextColor(...primaryColor);
+                    pdf.setFont(undefined, 'bold');
+                    pdf.text(title, leftMargin + padding, yPosition + padding + (headerFontSize * 0.45));
+                    pdf.setFontSize(bodyFontSize + 1);
+                    pdf.setFont(undefined, 'normal');
+                    pdf.setTextColor(30, 30, 30);
+                    pdf.text(splitContent, leftMargin + padding, yPosition + padding + headerFontSize + 7);
+                    return yPosition + contentHeight + (padding * 2) + headerFontSize + margin;
+                };
+
+                const addChecklistBox = (title, items, yPosition) => {
+                    const padding = 8;
+                    const margin = 8;
+                    const boxWidth = contentWidth;
+                    let contentHeight = 0;
+                    
+                    // Calculate content height
+                    pdf.setFontSize(bodyFontSize);
+                    const itemHeight = bodyFontSize * 0.5;
+                    contentHeight = Math.max(1, items.length) * itemHeight;
+
+                    // Draw box
+                    pdf.setFillColor(...boxBgColor);
+                    pdf.setDrawColor(...boxBorderColor);
+                    pdf.roundedRect(leftMargin, yPosition, boxWidth, contentHeight + (padding * 2) + headerFontSize, 3, 3, 'FD');
+
+                    // Add title
+                    pdf.setFontSize(headerFontSize + 1);
+                    pdf.setTextColor(...primaryColor);
+                    pdf.setFont(undefined, 'bold');
+                    pdf.text(title, leftMargin + padding, yPosition + padding + (headerFontSize * 0.45));
+
+                    // Add items
+                    pdf.setFontSize(bodyFontSize);
+                    pdf.setFont(undefined, 'normal');
+                    pdf.setTextColor(0, 0, 0);
+                    if (items.length === 0) {
+                        pdf.text('No items selected.', leftMargin + padding, yPosition + padding + headerFontSize + 7);
+                    } else {
+                        items.forEach((item, index) => {
+                            pdf.text(`• ${item}`, leftMargin + padding, yPosition + padding + headerFontSize + 7 + (index * itemHeight));
+                        });
+                    }
+
+                    return yPosition + contentHeight + (padding * 2) + headerFontSize + margin;
+                };
+
+                const addPhotoBox = (title, photos, yPosition) => {
+                    const padding = 10;
+                    const margin = 10;
+                    const boxWidth = contentWidth;
+                    const photoSize = 40;
+                    const photosPerRow = Math.floor((boxWidth - (padding * 2)) / (photoSize + 10));
+                    const rows = Math.ceil(photos.length / photosPerRow);
+                    const boxHeight = (rows * (photoSize + 10)) + (padding * 2) + headerFontSize + 10;
+
+                    // If not enough space, add a new page
+                    if (yPosition + boxHeight + 20 > pageHeight - bottomMargin) {
                         pdf.addPage();
-                        return pageTopMarginForNewPage; 
+                        yPosition = topMargin;
+                        yPosition = addLogo(yPosition);
                     }
-                    return currentY;
+
+                    // Draw box
+                    pdf.setFillColor(245, 247, 252);
+                    pdf.setDrawColor(180, 190, 210);
+                    pdf.roundedRect(leftMargin, yPosition, boxWidth, boxHeight, 5, 5, 'FD');
+
+                    // Add title with camera icon
+                    pdf.setFontSize(headerFontSize + 1);
+                    pdf.setTextColor(...primaryColor);
+                    pdf.setFont(undefined, 'bold');
+                    // Camera icon (Unicode)
+                    pdf.text('\uD83D\uDCF7 ' + title, leftMargin + padding, yPosition + padding + (headerFontSize * 0.45));
+
+                    // Add photos centered
+                    let currentX = leftMargin + padding;
+                    let currentY = yPosition + padding + headerFontSize + 10;
+                    let rowPhotoCount = 0;
+                    photos.forEach((photo, index) => {
+                        if (rowPhotoCount === photosPerRow) {
+                            currentX = leftMargin + padding;
+                            currentY += photoSize + 10;
+                            rowPhotoCount = 0;
+                        }
+                        // Add subtle border/shadow
+                        pdf.setDrawColor(200, 200, 200);
+                        pdf.setLineWidth(0.5);
+                        pdf.rect(currentX - 2, currentY - 2, photoSize + 4, photoSize + 4, 'S');
+                        try {
+                            pdf.addImage(
+                                photo.data,
+                                'JPEG',
+                                currentX,
+                                currentY,
+                                photoSize,
+                                photoSize
+                            );
+                        } catch (e) {
+                            console.error("Error adding photo:", e);
+                        }
+                        currentX += photoSize + 10;
+                        rowPhotoCount++;
+                    });
+                    return yPosition + boxHeight + margin;
                 };
 
-                const addPhotosToPDF = (photos, currentY, pageTopMarginForNewPage) => {
-                    if (photos && photos.length > 0) {
-                        currentY = checkPageBreak(currentY, 0, pageTopMarginForNewPage); 
-                        currentY += lineSpacing * 0.5;
-                        const photoBoxMaxWidth = 50; const photoBoxMaxHeight = 50; const photoMargin = 4;
-                        let currentX = leftMargin; let rowMaxHeight = 0;
-
-                        for (let i = 0; i < photos.length; i++) {
-                            const photo = photos[i];
-                            if (!photo.data || typeof photo.data !== 'string' || !photo.data.startsWith('data:image/')) {
-                                console.error(`PDF: Invalid data for photo ${photo.name}. Skipping.`);
-                                currentY = checkPageBreak(currentY, lineSpacing, pageTopMarginForNewPage);
-                                pdf.setTextColor(255, 0, 0);
-                                let tempY = addText(`[Skipped: ${photo.name.substring(0,20)} (invalid data)]`, currentX, currentY, {fontSize: smallFontSize});
-                                pdf.setTextColor(0,0,0);
-                                currentX += (photoBoxMaxWidth / 2) + photoMargin;
-                                rowMaxHeight = Math.max(rowMaxHeight, (tempY - currentY));
-                                if (currentX > leftMargin + contentWidth - (photoBoxMaxWidth/2)) {
-                                    currentX = leftMargin; currentY += rowMaxHeight + photoMargin; rowMaxHeight = 0;
-                                }
-                                continue;
-                            }
-                            currentY = checkPageBreak(currentY, photoBoxMaxHeight + photoMargin, pageTopMarginForNewPage);
-                            try {
-                                const props = pdf.getImageProperties(photo.data);
-                                let newWidth = props.width; let newHeight = props.height;
-                                if (newWidth > photoBoxMaxWidth) { newWidth = photoBoxMaxWidth; newHeight = (props.height * newWidth) / props.width; }
-                                if (newHeight > photoBoxMaxHeight) { newHeight = photoBoxMaxHeight; newWidth = (props.width * newHeight) / props.height; }
-                                if (currentX + newWidth > leftMargin + contentWidth) {
-                                    currentX = leftMargin; currentY += rowMaxHeight + photoMargin; rowMaxHeight = 0;
-                                    currentY = checkPageBreak(currentY, photoBoxMaxHeight + photoMargin, pageTopMarginForNewPage);
-                                }
-                                pdf.addImage(photo.data, props.fileType, currentX, currentY, newWidth, newHeight);
-                                currentX += newWidth + photoMargin; rowMaxHeight = Math.max(rowMaxHeight, newHeight);
-                            } catch (imgError) {
-                                console.error("Error adding image to PDF:", photo.name, imgError);
-                                if (currentX + 20 > leftMargin + contentWidth) { currentX = leftMargin; currentY += rowMaxHeight + photoMargin; rowMaxHeight = 0;}
-                                pdf.setFontSize(smallFontSize).setTextColor(255,0,0); pdf.text(`[No img: ${photo.name.substring(0,10)}]`, currentX, currentY + 10);
-                                pdf.setFontSize(regularFontSize).setTextColor(0,0,0); currentX += 20 + photoMargin; rowMaxHeight = Math.max(rowMaxHeight, 20);
-                            }
-                        }
-                        currentY += rowMaxHeight + sectionSpacing;
-                    }
-                    return currentY;
+                const addFooter = (pageNumber, totalPages) => {
+                    const footerY = pageHeight - 15;
+                    pdf.setFontSize(smallFontSize);
+                    pdf.setTextColor(...secondaryColor);
+                    pdf.text(`Page ${pageNumber} of ${totalPages}`, pageWidth / 2, footerY, { align: 'center' });
+                    pdf.text("www.thebayservices.com", pageWidth / 2, footerY + 5, { align: 'center' });
                 };
 
-                const mainPdfContent = async (loadedLogoImgObject) => {
-                    try {
-                        let pageTopMarginForContent = logoTopMargin + 5; 
-                        if (loadedLogoImgObject && loadedLogoImgObject.width > 0) {
-                            logoTopHeight = (loadedLogoImgObject.height * logoTopWidth) / loadedLogoImgObject.width;
-                            pageTopMarginForContent = logoTopMargin + logoTopHeight + 5; 
-                        }
-                        
-                        yPosition = pageTopMarginForContent;
+                // Generate Phase 1 (First Page)
+                let yPosition = topMargin;
+                yPosition = addLogo(yPosition);
+                yPosition = addHeader("INSPECTION & WORK REPORT", yPosition);
+                yPosition = addSubHeader(`Service Date: ${formData.serviceDate}`, yPosition);
+                yPosition += 10;
 
-                        let titleYPosition = pageTopMarginForContent; 
-                        if (!loadedLogoImgObject) { 
-                            titleYPosition = 15; 
-                        }
-                        
-                        try { pdf.setFont("Inter", "bold"); } catch(e){ pdf.setFont(undefined, "bold");}
-                        pdf.setFontSize(15); 
-                        pdf.setTextColor(55, 65, 81); 
-                        pdf.text('INSPECTION & WORK REPORT', pdf.internal.pageSize.getWidth() / 2, titleYPosition, { align: 'center' });
-                        
-                        titleYPosition += (15 * 0.38) + 1.5;
-                        try { pdf.setFont("Inter", "normal"); } catch(e){ pdf.setFont(undefined, "normal");}
-                        pdf.setFontSize(regularFontSize); 
-                        pdf.setTextColor(107, 114, 128); 
-                        pdf.text(`Service Date: ${formData.serviceDate || 'N/A'}`, pdf.internal.pageSize.getWidth() / 2, titleYPosition, { align: 'center' });
-                        
-                        yPosition = titleYPosition + regularFontSize * 0.38 + sectionSpacing;
+                // Customer Information Box
+                // Draw a divider line between header and customer info
+                pdf.setDrawColor(200, 210, 230);
+                pdf.setLineWidth(0.7);
+                pdf.line(leftMargin, yPosition + 2, pageWidth - rightMargin, yPosition + 2);
+                yPosition += 8;
 
-                        yPosition = addSectionTitlePDF('Customer & Service Information', yPosition);
-                        yPosition = addText(`Name: ${formData.customerName || 'N/A'}`, leftMargin, yPosition, {color: '#374151'}); 
-                        yPosition += lineSpacing;
-                        yPosition = addText(`Phone: ${formData.phoneNumber || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
-                        yPosition += lineSpacing;
-                        yPosition = addText(`Email: ${formData.email || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
-                        yPosition += lineSpacing;
-                        yPosition = addText(`Address: ${formData.address || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
-                        yPosition += lineSpacing;
-                        yPosition = addText(`Service Type: ${formData.serviceType || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
-                        yPosition += lineSpacing;
-                        yPosition = addText(`Technician: ${formData.technician || 'N/A'}`, leftMargin, yPosition, {color: '#374151'});
-                        yPosition += sectionSpacing;
+                // Customer Info Box with bold labels and spacing
+                const customerInfoFields = [
+                    { label: 'Name', value: formData.customerName },
+                    { label: 'Phone', value: formData.phoneNumber || 'N/A' },
+                    { label: 'Email', value: formData.email || 'N/A' },
+                    { label: 'Address', value: formData.address },
+                    { label: 'Service Type', value: formData.serviceType },
+                    { label: 'Technician', value: formData.technician || 'N/A' }
+                ];
+                const boxPadding = 10;
+                const boxMargin = 10;
+                const boxWidth = contentWidth;
+                const fieldHeight = bodyFontSize * 0.7 + 2;
+                const boxHeight = customerInfoFields.length * fieldHeight + boxPadding * 2;
+                pdf.setFillColor(245, 247, 252); // Softer background
+                pdf.setDrawColor(180, 190, 210); // Slightly darker border
+                pdf.roundedRect(leftMargin, yPosition, boxWidth, boxHeight, 5, 5, 'FD');
+                pdf.setFontSize(headerFontSize + 1);
+                pdf.setTextColor(...primaryColor);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Customer Information', leftMargin + boxPadding, yPosition + boxPadding + 2);
+                pdf.setFontSize(bodyFontSize + 1);
+                pdf.setFont(undefined, 'normal');
+                pdf.setTextColor(30, 30, 30);
+                let infoY = yPosition + boxPadding + 10;
+                customerInfoFields.forEach(field => {
+                    pdf.setFont(undefined, 'bold');
+                    pdf.text(`${field.label}:`, leftMargin + boxPadding, infoY);
+                    pdf.setFont(undefined, 'normal');
+                    pdf.text(`${field.value}`, leftMargin + boxPadding + 32, infoY);
+                    infoY += fieldHeight;
+                });
+                yPosition += boxHeight + boxMargin;
 
-                        yPosition = addPhaseTitle('PHASE 1: PRE-SERVICE INSPECTION REPORT', yPosition);
-                        yPosition = addSectionTitlePDF('Initial Observations & Findings', yPosition);
-                        yPosition = addText(formData.preInspectionNotes || 'No specific pre-inspection notes provided.', leftMargin, yPosition, {color: '#374151'});
-                        yPosition += lineSpacing;
-                        if (this.inspectionPhotos && this.inspectionPhotos.length > 0) {
-                            yPosition = checkPageBreak(yPosition, 0, pageTopMarginForContent);
-                            yPosition = addSectionTitlePDF('Inspection Photos (Before Service)', yPosition);
-                            yPosition = addPhotosToPDF(this.inspectionPhotos, yPosition, pageTopMarginForContent);
-                        }
-                        yPosition += sectionSpacing;
+                // Phase 1 Content
+                yPosition += 5;
+                yPosition = addHeader("PHASE 1: PRE-SERVICE INSPECTION", yPosition);
+                yPosition += 5;
 
-                        yPosition = addPhaseTitle('PHASE 2: WORK DONE & RECOMMENDATIONS REPORT', yPosition);
+                // Inspection Checklist Box
+                const inspectionChecklistItems = formData.inspectionChecklist || [];
+                yPosition = addChecklistBox("Initial Observations & Findings", inspectionChecklistItems, yPosition);
 
-                        yPosition = addSectionTitlePDF('Work Performed Checklist', yPosition);
-                        const checklistItems = formData.checklist || [];
-                        if (checklistItems.length > 0) {
-                            checklistItems.forEach(item => {
-                                yPosition = checkPageBreak(yPosition, lineSpacing, pageTopMarginForContent);
-                                yPosition = addText(`✓ ${item}`, leftMargin, yPosition); // Removed yPosition increment here
-                                yPosition += lineSpacing * 0.7; 
-                            });
-                        } else {
-                            yPosition = addText('No specific tasks selected from checklist.', leftMargin, yPosition, {color: '#374151'});
-                        }
-                        yPosition += lineSpacing;
+                // Inspection Photos Box
+                if (this.inspectionPhotos && this.inspectionPhotos.length > 0) {
+                    yPosition += 5;
+                    yPosition = addPhotoBox("Inspection Photos", this.inspectionPhotos, yPosition);
+                }
 
-                        if (formData.workPerformed) {
-                            yPosition = checkPageBreak(yPosition, 0, pageTopMarginForContent);
-                            yPosition = addSectionTitlePDF('Additional Work Performed Details', yPosition);
-                            yPosition = addText(formData.workPerformed, leftMargin, yPosition, {color: '#374151'});
-                            yPosition += sectionSpacing;
-                        }
+                addFooter(1, 2);
 
-                        if (formData.recommendations) {
-                            yPosition = checkPageBreak(yPosition, 0, pageTopMarginForContent);
-                            yPosition = addSectionTitlePDF('Recommendations for Customer', yPosition);
-                            yPosition = addText(formData.recommendations, leftMargin, yPosition, {color: '#374151'});
-                            yPosition += sectionSpacing;
-                        }
+                // Generate Phase 2 (Second Page)
+                pdf.addPage();
+                yPosition = topMargin;
+                yPosition = addLogo(yPosition);
+                yPosition = addHeader("PHASE 2: WORK DONE & RECOMMENDATIONS", yPosition);
+                yPosition += 10;
 
-                        if (this.workDonePhotos && this.workDonePhotos.length > 0) {
-                            yPosition = checkPageBreak(yPosition, 0, pageTopMarginForContent);
-                            yPosition = addSectionTitlePDF('Work Done Photos (After Service)', yPosition);
-                            yPosition = addPhotosToPDF(this.workDonePhotos, yPosition, pageTopMarginForContent);
-                        }
-                        yPosition += sectionSpacing;
+                // Work Performed Box
+                const workChecklistItems = formData.workPerformedChecklist || [];
+                yPosition = addChecklistBox("Work Performed", workChecklistItems, yPosition);
 
-                        yPosition = checkPageBreak(yPosition, 40, pageTopMarginForContent);
-                        yPosition = addSectionTitlePDF('Service Completion', yPosition);
-                        const completionText = `This report certifies that the above services have been completed by Bay Services on ${formData.serviceDate || 'the specified date'}.`;
-                        yPosition = addText(completionText, leftMargin, yPosition, {color: '#374151'});
-                        yPosition += lineSpacing * 1.5;
-                        yPosition = addText(`Technician Signature: ${formData.technician || '_________________________'}`, leftMargin, yPosition, {color: '#374151'});
-                        yPosition += lineSpacing * 1.5;
-                        yPosition = addText(`Customer Signature: _________________________`, leftMargin, yPosition, {color: '#374151'});
+                // Additional Work Details Box
+                if (formData.workPerformed) {
+                    yPosition += 5;
+                    yPosition = addBoxedSection("Additional Work Details", formData.workPerformed, yPosition);
+                }
 
-                        const totalPages = pdf.internal.getNumberOfPages();
-                        for (let i = 1; i <= totalPages; i++) {
-                            pdf.setPage(i);
-                            if (loadedLogoImgObject) {
-                                try {
-                                    const pageWidth = pdf.internal.pageSize.getWidth();
-                                    let currentLogoTopHeight = logoTopHeight; 
-                                    if (loadedLogoImgObject.width > 0) { 
-                                         currentLogoTopHeight = (loadedLogoImgObject.height * logoTopWidth) / loadedLogoImgObject.width;
-                                    }
+                // Recommendations Box
+                if (formData.recommendations) {
+                    yPosition += 5;
+                    yPosition = addBoxedSection("Recommendations", formData.recommendations, yPosition);
+                }
 
-                                    pdf.addImage(
-                                        loadedLogoImgObject,
-                                        'PNG',
-                                        (pageWidth - logoTopWidth) / 2, 
-                                        logoTopMargin,                  
-                                        logoTopWidth,
-                                        currentLogoTopHeight
-                                    );
-                                } catch (e) { console.error("Error adding logo to PDF page " + i + ":", e); }
-                            }
-                            try { pdf.setFont("Inter", "normal"); } catch(e){ pdf.setFont(undefined, "normal");}
-                            pdf.setFontSize(smallFontSize).setTextColor(120, 120, 120);
-                            pdf.text(websiteText, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
-                            pdf.text(`Page ${i} of ${totalPages}`, leftMargin, pdf.internal.pageSize.getHeight() - 10);
-                        }
-                        pdf.save(`BayServices_Report_${formData.customerName.replace(/\s+/g, '_')}_${formData.serviceDate}.pdf`);
-                        showMessage('PDF generated successfully!', 'success');
-                    } catch (pdfError) {
-                        console.error("Critical error during PDF content generation:", pdfError);
-                        showMessage("Failed to generate PDF content. See console.", "error");
-                    }
-                };
+                // Work Done Photos Box
+                if (this.workDonePhotos && this.workDonePhotos.length > 0) {
+                    yPosition += 5;
+                    yPosition = addPhotoBox("Work Done Photos", this.workDonePhotos, yPosition);
+                }
 
-                const logoImgForPdf = new Image();
-                logoImgForPdf.crossOrigin = 'anonymous';
-                logoImgForPdf.onload = async () => {
-                    console.log("Logo image for PDF (from URL) loaded successfully.");
-                    await mainPdfContent(logoImgForPdf);
-                };
-                logoImgForPdf.onerror = async () => {
-                    console.error("Failed to load logo image from URL for PDF. Proceeding without logo.");
-                    showMessage('Could not load company logo for PDF (URL load failed). PDF will be generated without it.', 'warning');
-                    await mainPdfContent(null); 
-                };
-                logoImgForPdf.src = logoUrlForPdf;
+                // Service Completion Box
+                yPosition += 5;
+                const completionContent = [
+                    `This report certifies that the above services have been completed by Bay Services on ${formData.serviceDate}.`,
+                    `Technician Signature: ${formData.technician || '_________________________'}`,
+                    `Customer Signature: _________________________`
+                ].join('\n');
+                yPosition = addBoxedSection("Service Completion", completionContent, yPosition);
+
+                addFooter(2, 2);
+
+                // Save the PDF
+                pdf.save(`BayServices_Report_${formData.customerName.replace(/\s+/g, '_')}_${formData.serviceDate}.pdf`);
+                showMessage('PDF generated successfully!', 'success');
             }
         }
         
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded and parsed.");
             const indicator = document.getElementById('javascript-running-indicator');
-            if(indicator) indicator.style.display = 'block';
+            if(indicator) indicator.style.display = 'none';
             
             if (db && auth) { // Ensure Firebase services are initialized
                 if (!appInstance) { 
@@ -1187,8 +1236,324 @@
             });
         }
 
+        async function fetchAddressSuggestions(query) {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=us&limit=5`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                return data.map(item => item.display_name);
+            } catch (error) {
+                console.error('Error fetching address suggestions:', error);
+                return [];
+            }
+        }
+
+        function displayAddressSuggestions(suggestions) {
+            const suggestionsDiv = document.getElementById('addressSuggestions');
+            if (!suggestionsDiv) return; suggestionsDiv.innerHTML = '';
+            if (suggestions.length === 0) { suggestionsDiv.style.display = 'none'; return; }
+            suggestions.forEach(suggestion => {
+                const item = document.createElement('div'); item.className = 'address-suggestion'; item.textContent = suggestion;
+                item.addEventListener('click', () => { const input = document.getElementById('address'); if (input) input.value = suggestion; suggestionsDiv.style.display = 'none'; });
+                suggestionsDiv.appendChild(item);
+            });
+            suggestionsDiv.style.display = 'block';
+        }
+
+        const inspectionChecklists = {
+            "Air Duct Cleaning": [
+                "Access to vents and registers: Clear",
+                "Access to vents and registers: Restricted (specify reason)",
+                "Access to HVAC unit (furnace/AC): Clear",
+                "Access to HVAC unit (furnace/AC): Restricted (specify reason)",
+                "Pets secured",
+                "Fragile items secured/removed",
+                "Thermostat turned off",
+                "Customer's specific concerns/issues noted",
+                "Condition of vent registers and grilles",
+                "Visible dust/debris at vent openings/registers",
+                "Visible signs of mold at vent openings/registers",
+                "Unusual odors from vents",
+                "Restricted airflow in certain rooms/zones",
+                "Condition of visible ductwork",
+                "Condition of plenum (supply/return)",
+                "Air filter condition",
+                "Air filter type and size noted",
+                "Blower compartment: Dirty",
+                "Blower wheel: Dirty",
+                "A/C coil: Dirty (if accessible)",
+                "Condensate drain pan condition",
+                "HVAC unit general condition",
+                "Evidence of prior duct cleaning"
+            ],
+            "Dryer Vent Cleaning SIDE-BY-SIDE": [
+                "Dryer location and accessibility for movement (Side-by-Side)",
+                "Dryer disconnected from power/gas before inspection",
+                "Lint screen condition",
+                "Lint trap area condition",
+                "Vent connection (dryer to wall) type and condition",
+                "Vent connection (dryer to wall) security",
+                "Visible lint/blockage in transition duct",
+                "Approximate duct run length and complexity",
+                "Exterior vent cover type and condition",
+                "Airflow at exterior vent",
+                "Signs of moisture damage around vent path or outlet",
+                "Customer reports of previous issues",
+                "Signs of pest activity at vent outlet"
+            ],
+            "Dryer Vent Cleaning STACKED": [
+                "Dryer location and accessibility (Stacked)",
+                "Dryer disconnected from power/gas before inspection",
+                "Lint screen condition",
+                "Lint trap area condition",
+                "Vent connection (dryer to wall) type and condition",
+                "Vent connection (dryer to wall) security",
+                "Visible lint/blockage in accessible part of transition duct",
+                "Approximate duct run length and complexity",
+                "Exterior vent cover type and condition",
+                "Airflow at exterior vent",
+                "Signs of moisture damage around vent path or outlet",
+                "Customer reports of previous issues",
+                "Signs of pest activity at vent outlet",
+                "Presence/absence of access panels for vent ducting"
+            ],
+            "Chimney Sweep": [
+                "Access to fireplace/appliance: Clear",
+                "Access to fireplace/appliance: Restricted",
+                "Area around hearth protected",
+                "Customer's specific concerns/issues noted",
+                "Exterior chimney structure condition",
+                "Chimney cap/spark arrester: Condition and presence",
+                "Chimney crown condition",
+                "Flashing condition",
+                "Obstructions at top of chimney",
+                "Stains/efflorescence on exterior chimney surface",
+                "Interior firebox condition",
+                "Damper operation and condition",
+                "Lintel condition",
+                "Smoke chamber condition",
+                "Visible obstructions in flue",
+                "Creosote/soot buildup in flue",
+                "Flue liner: Type and condition",
+                "Appliance connector pipe condition",
+                "Clearance to combustibles maintained",
+                "Smoke/CO detectors: Presence and functionality"
+            ],
+            "Furnace Cleaning with Blower": [
+                "Access to furnace: Clear",
+                "Access to furnace: Restricted",
+                "Furnace power/gas off before inspection",
+                "Thermostat condition and settings",
+                "Customer's specific concerns/issues noted",
+                "Air filter: Condition, type, and size",
+                "Blower compartment condition",
+                "Blower wheel condition",
+                "Blower motor condition/lubrication",
+                "Blower belt condition and tension",
+                "Burner compartment condition",
+                "Burners condition",
+                "Ignition system: Type and condition",
+                "Flame sensor condition",
+                "Heat exchanger: Visible condition",
+                "Condensate drain system condition",
+                "Venting system/flue pipe condition",
+                "Safety switches/limit controls: Visible condition",
+                "Electrical wiring and connections condition",
+                "Gas valve and connections condition",
+                "Furnace general cleanliness",
+                "Unusual noises or odors during furnace operation"
+            ],
+            "Kitchen Range Hood Cleaning": [
+                "Access to hood: Clear",
+                "Access to hood: Restricted",
+                "Surrounding area and equipment protected",
+                "Customer's specific concerns/issues noted",
+                "System power off",
+                "Hood type and size",
+                "Grease buildup on interior hood surfaces",
+                "Hood exterior surfaces condition",
+                "Filter type and number",
+                "Grease buildup on filters",
+                "Filters condition",
+                "Grease cups/trays: Condition and fullness",
+                "Visible grease buildup in accessible ductwork sections",
+                "Ductwork access panels: Availability and condition",
+                "Signs of grease leakage at ductwork seams and connections",
+                "Exhaust fan: Location and accessibility",
+                "Grease buildup on fan housing",
+                "Grease buildup on fan blades",
+                "Fan motor condition/noise",
+                "Fan belt condition and tension",
+                "Fan bearings condition",
+                "Fan electrical connections condition",
+                "Fire suppression system present",
+                "Fire suppression nozzles: Condition",
+                "Fire suppression fusible links: Condition",
+                "Fire suppression system inspection tag: Date",
+                "Makeup air system observed",
+                "Hood lighting condition",
+                "Evidence and standard of previous cleaning"
+            ]
+        };
+
+        function updateInspectionChecklist(serviceType) {
+            const checklistContainer = document.getElementById('preInspectionChecklist');
+            if (!checklistContainer) return;
+
+            checklistContainer.innerHTML = '';
+            const checklist = inspectionChecklists[serviceType] || [];
+
+            checklist.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-label';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'inspectionChecklist';
+                checkbox.value = item;
+                checkbox.className = 'form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500';
+                
+                const label = document.createElement('label');
+                label.textContent = item;
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                checklistContainer.appendChild(div);
+            });
+        }
+
+        // Add event listener for service type change
+        document.getElementById('serviceType').addEventListener('change', (e) => {
+            updateInspectionChecklist(e.target.value);
+        });
+
+        // Initialize checklist on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const serviceType = document.getElementById('serviceType').value;
+            updateInspectionChecklist(serviceType);
+        });
+
+        const workPerformedChecklists = {
+            "Air Duct Cleaning": [
+                "Protected vents and household items",
+                "System placed under negative pressure",
+                "Supply ducts cleaned (e.g., using whip system, brush system, air scrubbing)",
+                "Return ducts cleaned",
+                "Accessible plenum(s) cleaned",
+                "Blower motor and housing cleaned",
+                "Evaporator coil cleaned (if accessible and included in service)",
+                "Condensate pan cleaned (if accessible and included in service)",
+                "Registers and grilles cleaned",
+                "Air filter checked/replaced/cleaned (as per agreement)",
+                "Access holes sealed (if created)",
+                "System tested for proper operation post-cleaning",
+                "Work area cleaned up"
+            ],
+            "Dryer Vent Cleaning SIDE-BY-SIDE": [
+                "Dryer (Side-by-Side) moved and work area prepared",
+                "Lint screen cleaned",
+                "Lint trap housing cleaned/vacuumed",
+                "Transition duct (from dryer to wall) cleaned/replaced (if needed)",
+                "Main dryer vent duct cleaned (e.g., using brushes, air tools from one or both ends)",
+                "Exterior vent cover cleaned and checked for proper operation",
+                "Airflow tested post-cleaning",
+                "Dryer reconnected and tested (if applicable)",
+                "Work area cleaned up"
+            ],
+            "Dryer Vent Cleaning STACKED": [
+                "Access to stacked dryer ensured, work area prepared",
+                "Lint screen cleaned",
+                "Lint trap housing cleaned/vacuumed",
+                "Transition duct (from dryer to wall) cleaned/replaced (if needed)",
+                "Main dryer vent duct cleaned (e.g., using brushes, air tools from one or both ends)",
+                "Exterior vent cover cleaned and checked for proper operation",
+                "Airflow tested post-cleaning",
+                "Dryer reconnected and tested (if applicable)",
+                "Work area cleaned up"
+            ],
+            "Chimney Sweep": [
+                "Work area protected (drop cloths, etc.)",
+                "Detailed inspection performed before cleaning",
+                "Flue swept (e.g., using brushes, rods, power sweeping system)",
+                "Smoke chamber cleaned",
+                "Damper area cleaned and checked",
+                "Firebox cleaned",
+                "Creosote and debris removed from system",
+                "Ash dump cleaned (if applicable)",
+                "Visual inspection of liner post-cleaning",
+                "Chimney cap/spark arrester checked/cleaned",
+                "Work area cleaned up",
+                "Basic operational check performed (e.g., damper movement)"
+            ],
+            "Furnace Cleaning with Blower": [
+                "Safety checks performed before starting",
+                "Furnace exterior wiped down",
+                "Blower compartment cleaned",
+                "Blower wheel and motor cleaned",
+                "Burner assembly cleaned",
+                "Ignition system (pilot, HSI, electrode) cleaned and inspected",
+                "Flame sensor cleaned",
+                "Accessible heat exchanger surfaces brushed/vacuumed",
+                "Condensate trap and drain line cleaned/flushed (for high-efficiency furnaces)",
+                "Flue passages/vent pipe checked and cleaned if necessary",
+                "Air filter replaced/cleaned (as per agreement)",
+                "Furnace panels secured",
+                "System operation tested (ignition, flame characteristics, blower operation)",
+                "Safety controls checked (e.g., limit switch, rollout switch – if part of service)",
+                "Work area cleaned up"
+            ],
+            "Kitchen Range Hood Cleaning": [
+                "Appliances and surfaces protected",
+                "Hood filters removed and cleaned (e.g., soaked, pressure washed)",
+                "Grease traps/cups emptied and cleaned",
+                "Interior and exterior surfaces of hood canopy cleaned/degreased",
+                "Accessible ductwork cleaned (from hood to fan, or sections between access panels)",
+                "Exhaust fan housing and blades scraped/cleaned/degreased",
+                "Fan belt checked/adjusted/replaced (if applicable and included)",
+                "Access panels opened and resealed",
+                "Fire suppression system components (nozzles, links) carefully cleaned around (if present and cleaning around them is part of scope)",
+                "Work area cleaned up, equipment polished",
+                "System tested for proper operation"
+            ]
+        };
+
+        function updateWorkPerformedChecklist(serviceType) {
+            const checklistContainer = document.getElementById('workPerformedChecklist');
+            if (!checklistContainer) return;
+
+            checklistContainer.innerHTML = '';
+            const checklist = workPerformedChecklists[serviceType] || [];
+
+            checklist.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'checkbox-label';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'workPerformedChecklist';
+                checkbox.value = item;
+                checkbox.className = 'form-checkbox rounded text-blue-500 mr-2 focus:ring-blue-500';
+                
+                const label = document.createElement('label');
+                label.textContent = item;
+                
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                checklistContainer.appendChild(div);
+            });
+        }
+
+        // Add event listener for service type change
+        document.getElementById('serviceType').addEventListener('change', (e) => {
+            updateWorkPerformedChecklist(e.target.value);
+        });
+
+        // Initialize work performed checklist on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const serviceType = document.getElementById('serviceType').value;
+            updateWorkPerformedChecklist(serviceType);
+        });
+
     </script>
-
-
 </body>
 </html>
