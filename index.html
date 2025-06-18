@@ -1,22 +1,19 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inspection & Work Report App</title>
-    
-    <link rel="manifest" href="manifest.json">
-    
-    <meta name="theme-color" content="#3B82F6">
-
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-
-    <link id="favicon" rel="icon" href="https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png" type="image/png">
-    <script src="https://cdn.tailwindcss.com" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inspection &amp; Work Report App</title>
+<link href="manifest.json" rel="manifest"/>
+<meta content="#3B82F6" name="theme-color"/>
+<link href="icons/icon-192x192.png" rel="apple-touch-icon"/>
+<link href="https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png" id="favicon" rel="icon" type="image/png"/>
+<script defer="" src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8; 
@@ -225,141 +222,271 @@
     </style>
 </head>
 <body class="p-2 sm:p-4 md:p-8">
-    <div id="javascript-running-indicator" style="background-color: lightgreen; padding: 5px; text-align: center; display: none;">JavaScript is running!</div>
-    <div id="messageBox" class="fixed top-5 right-5 text-white p-4 rounded-lg shadow-xl z-50 hidden opacity-0 transform translate-y-[-20px]"></div>
+<div id="javascript-running-indicator" style="background-color: lightgreen; padding: 5px; text-align: center; display: none;">JavaScript is running!</div>
+<div class="fixed top-5 right-5 text-white p-4 rounded-lg shadow-xl z-50 hidden opacity-0 transform translate-y-[-20px]" id="messageBox"></div>
+<div class="container mx-auto max-w-4xl bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-2xl">
+<div class="text-center mb-6 sm:mb-8">
+<img alt="Bay Services Logo" class="mx-auto h-12 sm:h-16 w-auto mb-3 sm:mb-4" id="headerLogo" onerror="this.style.display='none'; console.error('Failed to load header logo from URL. It will be hidden.')" src="https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png"/>
+<h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Inspection &amp; Work Report</h1>
+<p class="text-sm sm:text-base text-gray-600">Fill out the inspection and work details below.</p>
+<p class="text-xs sm:text-sm text-gray-500 mt-2">User ID: <span id="userIdDisplay">Loading...</span></p>
+</div>
 
-    <div class="container mx-auto max-w-4xl bg-white p-4 sm:p-6 md:p-8 rounded-xl shadow-2xl">
-        <div class="text-center mb-6 sm:mb-8">
-            <img id="headerLogo" src="https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png" alt="Bay Services Logo" class="mx-auto h-12 sm:h-16 w-auto mb-3 sm:mb-4" onerror="this.style.display='none'; console.error('Failed to load header logo from URL. It will be hidden.')">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Inspection & Work Report</h1>
-            <p class="text-sm sm:text-base text-gray-600">Fill out the inspection and work details below.</p>
-            <p class="text-xs sm:text-sm text-gray-500 mt-2">User ID: <span id="userIdDisplay">Loading...</span></p>
-        </div>
+<!-- Report Type Selection - Moved to top -->
+<div class="form-group mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
+<label class="form-label text-lg font-semibold text-blue-800" for="reportType">📋 Report Type</label>
+<select class="form-select text-lg" id="reportType">
+<option value="IR">🔍 Inspection Report (IR)</option>
+<option value="SDR">✅ Service Done Report (SDR)</option>
+<option value="QR">💰 Quoting Report (QR)</option>
+</select>
+</div>
 
-        <form id="inspectionForm" class="space-y-6">
-            <fieldset class="border p-3 sm:p-4 rounded-md">
-                <legend class="text-lg font-semibold text-gray-700 px-2">Customer & Service Setup</legend>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    <div class="form-group">
-                        <label for="customerName" class="form-label">Customer Name <span class="text-red-500">*</span></label>
-                        <input type="text" id="customerName" class="form-input" required autocomplete="name">
-                    </div>
-                    <div class="form-group">
-                        <label for="phoneNumber" class="form-label">Phone Number</label>
-                        <input type="tel" id="phoneNumber" class="form-input" autocomplete="tel">
-                    </div>
-                    <div class="form-group md:col-span-2">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input type="email" id="email" class="form-input" autocomplete="email">
-                    </div>
-                    <div class="form-group relative md:col-span-2"> 
-                        <label for="address" class="form-label">Service Address <span class="text-red-500">*</span></label>
-                        <input type="text" id="address" class="form-input" required autocomplete="street-address">
-                        <div id="addressSuggestions" class="address-suggestions hidden"></div>
-                    </div>
-                     <div class="form-group">
-                        <label for="serviceDate" class="form-label">Service Date <span class="text-red-500">*</span></label>
-                        <input type="date" id="serviceDate" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="serviceType" class="form-label">Service Type</label>
-                        <select id="serviceType" class="form-select">
-                            <option value="Air Duct Cleaning">Air Duct Cleaning</option>
-                            <option value="Dryer Vent Cleaning SIDE-BY-SIDE">Dryer Vent Cleaning SIDE-BY-SIDE</option>
-                            <option value="Chimney Sweep">Chimney Sweep</option>
-                            <option value="Furnace Cleaning with Blower">Furnace Cleaning with Blower</option>
-                            <option value="Kitchen Range Hood Cleaning">Kitchen Range Hood Cleaning</option>
-                            <option value="Dryer Vent Cleaning STACKED">Dryer Vent Cleaning STACKED</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="technician" class="form-label">Technician Name</label>
-                        <select id="technician" class="form-select">
-                            <option value="">Select Technician</option>
-                            <option value="Alex">Alex</option>
-                            <option value="Riz">Riz</option>
-                            <option value="Vusal">Vusal</option>
-                            <option value="Orkhan">Orkhan</option>
-                            <option value="Vance">Vance</option>
-                        </select>
-                    </div>
-                </div>
-            </fieldset>
+<fieldset class="border p-3 sm:p-4 rounded-md" id="qrSection" style="display: none;">
+<legend class="text-xl font-bold text-purple-700 px-2">Quoting Report</legend>
+<div class="form-group">
+<label class="form-label" for="materialCost">Material Cost ($)</label>
+<input class="form-input" id="materialCost" placeholder="Enter material cost" type="number"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="laborCost">Labor Cost ($)</label>
+<input class="form-input" id="laborCost" placeholder="Enter labor cost" type="number"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="otherCost">Other Costs ($)</label>
+<input class="form-input" id="otherCost" placeholder="Enter other costs" type="number"/>
+</div>
+<div class="form-group">
+<label class="form-label">Discount</label>
+<div class="flex gap-2">
+<input class="form-input w-2/3" id="discount" placeholder="Enter discount" type="number"/>
+<select class="form-select w-1/3" id="discountType">
+<option value="dollar">$</option>
+<option value="percent">%</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label font-bold" for="totalQuote">Total Quote ($)</label>
+<input class="form-input bg-gray-100" id="totalQuote" readonly="" type="text"/>
+</div>
+<div class="form-group">
+<button class="btn btn-primary w-full sm:w-auto" onclick="calculateQuote()" type="button">Calculate Quote</button>
+</div>
+</fieldset>
+<script>
+    function calculateQuote() {
+        const material = parseFloat(document.getElementById("materialCost").value) || 0;
+        const labor = parseFloat(document.getElementById("laborCost").value) || 0;
+        const other = parseFloat(document.getElementById("otherCost").value) || 0;
+        const discountVal = parseFloat(document.getElementById("discount").value) || 0;
+        const discountType = document.getElementById("discountType").value;
 
-            <fieldset class="border p-3 sm:p-4 rounded-md">
-                <legend class="text-xl font-bold text-blue-700 px-2">Phase 1: Pre-Service Inspection Report</legend>
-                <div class="form-group mt-4">
-                    <label for="preInspectionNotes" class="form-label">Initial Observations & Findings</label>
-                    <div id="preInspectionChecklist" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-4">
-                        <!-- Dynamic checklist will be populated here -->
-                    </div>
-                    <div class="mt-4">
-                        <label for="otherObservations" class="form-label">Other observations (please specify):</label>
-                        <textarea id="otherObservations" class="form-textarea" rows="2" placeholder="Enter any additional observations..."></textarea>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Inspection Photos (Before Service)</label>
-                    <label for="photoInputInspection" id="photoUploadInspection" class="photo-upload-area mb-4">
-                        <i class="fas fa-camera-retro text-3xl sm:text-4xl text-blue-500 mb-2"></i>
-                        <p class="text-sm sm:text-base">Upload Inspection Photos</p>
-                    </label>
-                    <input type="file" id="photoInputInspection" multiple accept="image/*" class="sr-only">
-                    <div id="photoPreviewInspection" class="mt-4 grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
-                    </div>
-                </div>
-            </fieldset>
-            
-            <fieldset class="border p-3 sm:p-4 rounded-md">
-                <legend class="text-xl font-bold text-green-700 px-2">Phase 2: Work Done & Recommendations Report</legend>
-                <div class="form-group mt-4">
-                    <label class="form-label">Work Performed Checklist</label>
-                    <div id="workPerformedChecklist" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-4">
-                        <!-- Dynamic checklist will be populated here -->
-                    </div>
-                    <div class="mt-4">
-                        <label for="otherWorkPerformed" class="form-label">Other work performed (specify):</label>
-                        <textarea id="otherWorkPerformed" class="form-textarea" rows="2" placeholder="Enter any additional work performed..."></textarea>
-                    </div>
-                </div>
+        const subtotal = material + labor + other;
+        let discountAmount = 0;
 
-                <div class="form-group">
-                    <label for="workPerformed" class="form-label">Additional Work Performed Details</label>
-                    <textarea id="workPerformed" class="form-textarea" rows="4" placeholder="Describe any additional tasks, repairs, or specific details about the work done."></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="recommendations" class="form-label">Recommendations for Customer</label>
-                    <textarea id="recommendations" class="form-textarea" rows="4" placeholder="Suggest any follow-up actions, future maintenance, or improvements."></textarea>
-                </div>
-                 <div class="form-group">
-                    <label class="form-label">Work Done Photos (After Service)</label>
-                    <label for="photoInputWorkDone" id="photoUploadWorkDone" class="photo-upload-area mb-4">
-                        <i class="fas fa-tools text-3xl sm:text-4xl text-green-500 mb-2"></i>
-                        <p class="text-sm sm:text-base">Upload Work Done Photos</p>
-                    </label>
-                    <input type="file" id="photoInputWorkDone" multiple accept="image/*" class="sr-only">
-                    <div id="photoPreviewWorkDone" class="mt-4 grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
-                    </div>
-                </div>
-            </fieldset>
+        if (discountType === "percent") {
+            discountAmount = subtotal * (discountVal / 100);
+        } else {
+            discountAmount = discountVal;
+        }
 
-            <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 mt-6 sm:mt-8">
-                <button type="button" id="saveBtn" class="btn btn-primary w-full sm:w-auto"><i class="fas fa-save mr-2"></i>Save Data</button>
-                <button type="button" id="previewBtn" class="btn btn-secondary w-full sm:w-auto"><i class="fas fa-eye mr-2"></i>Preview Report</button>
-                <button type="button" id="generatePdfBtn" class="btn btn-success w-full sm:w-auto"><i class="fas fa-file-pdf mr-2"></i>Generate PDF</button>
-            </div>
-        </form>
-    </div>
+        const total = Math.max(subtotal - discountAmount, 0).toFixed(2);
+        document.getElementById("totalQuote").value = total;
+    }
 
-    <div id="reportModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div class="modal-body" id="reportPreview"> 
-            </div>
-        </div>
-    </div>
+    document.addEventListener("DOMContentLoaded", function() {
+        const reportTypeSelector = document.getElementById("reportType");
+        const qrSection = document.getElementById("qrSection");
 
-    <script type="module">
+        reportTypeSelector.addEventListener("change", function() {
+            if (this.value === "QR") {
+                qrSection.style.display = "block";
+            } else {
+                qrSection.style.display = "none";
+            }
+        });
+
+        // Add event listeners for real-time calculation
+        const calculatorFields = ["materialCost", "laborCost", "otherCost", "discount", "discountType"];
+        calculatorFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener("input", calculateQuote);
+                field.addEventListener("change", calculateQuote);
+            }
+        });
+
+        // Initial calculation
+        calculateQuote();
+    });
+</script>
+<form class="space-y-6" id="inspectionForm">
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const reportTypeSelector = document.getElementById("reportType");
+        const qrSection = document.getElementById("qrSection");
+        // Получаем fieldset по legend
+        const fieldsets = document.querySelectorAll("form#inspectionForm fieldset");
+        let inspectionFieldset = null;
+        let workDoneFieldset = null;
+        fieldsets.forEach(fs => {
+            const legend = fs.querySelector("legend");
+            if (legend && legend.textContent.includes("Pre-Service Inspection")) {
+                inspectionFieldset = fs;
+            }
+            if (legend && legend.textContent.includes("Work Done")) {
+                workDoneFieldset = fs;
+            }
+        });
+        function toggleSections(value) {
+            if (value === "IR") {
+                if (inspectionFieldset) inspectionFieldset.style.display = "block";
+                if (workDoneFieldset) workDoneFieldset.style.display = "none";
+            } else if (value === "SDR") {
+                if (inspectionFieldset) inspectionFieldset.style.display = "none";
+                if (workDoneFieldset) workDoneFieldset.style.display = "block";
+            } else if (value === "QR") {
+                if (inspectionFieldset) inspectionFieldset.style.display = "none";
+                if (workDoneFieldset) workDoneFieldset.style.display = "none";
+            }
+        }
+        reportTypeSelector.addEventListener("change", (e) => toggleSections(e.target.value));
+        toggleSections(reportTypeSelector.value);
+    });
+</script>
+<fieldset class="border p-3 sm:p-4 rounded-md">
+<legend class="text-lg font-semibold text-gray-700 px-2">Customer &amp; Service Setup</legend>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+<div class="form-group">
+<label class="form-label" for="customerName">Customer Name <span class="text-red-500">*</span></label>
+<input autocomplete="name" class="form-input" id="customerName" required="" type="text"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="phoneNumber">Phone Number</label>
+<input autocomplete="tel" class="form-input" id="phoneNumber" type="tel"/>
+</div>
+<div class="form-group md:col-span-2">
+<label class="form-label" for="email">Email Address</label>
+<input autocomplete="email" class="form-input" id="email" type="email"/>
+</div>
+<div class="form-group relative md:col-span-2">
+<label class="form-label" for="address">Service Address <span class="text-red-500">*</span></label>
+<input autocomplete="street-address" class="form-input" id="address" required="" type="text"/>
+<div class="address-suggestions hidden" id="addressSuggestions"></div>
+</div>
+<div class="form-group">
+<label class="form-label" for="serviceDate">Service Date <span class="text-red-500">*</span></label>
+<input class="form-input" id="serviceDate" required="" type="date"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="serviceType">Service Type</label>
+<select class="form-select" id="serviceType">
+<option value="Air Duct Cleaning">Air Duct Cleaning</option>
+<option value="Dryer Vent Cleaning SIDE-BY-SIDE">Dryer Vent Cleaning SIDE-BY-SIDE</option>
+<option value="Chimney Sweep">Chimney Sweep</option>
+<option value="Furnace Cleaning with Blower">Furnace Cleaning with Blower</option>
+<option value="Kitchen Range Hood Cleaning">Kitchen Range Hood Cleaning</option>
+<option value="Dryer Vent Cleaning STACKED">Dryer Vent Cleaning STACKED</option>
+</select>
+</div>
+<div class="form-group">
+<label class="form-label" for="technician">Technician Name</label>
+<select class="form-select" id="technician">
+<option value="">Select Technician</option>
+<option value="Alex">Alex</option>
+<option value="Riz">Riz</option>
+<option value="Vusal">Vusal</option>
+<option value="Orkhan">Orkhan</option>
+<option value="Vance">Vance</option>
+<option value="Elk">Elk</option></select>
+</div>
+</div>
+</fieldset>
+<fieldset class="border p-3 sm:p-4 rounded-md">
+<legend class="text-xl font-bold text-blue-700 px-2">Phase 1: Pre-Service Inspection Report</legend>
+<div class="form-group mt-4">
+<label class="form-label" for="preInspectionNotes">Initial Observations &amp; Findings</label>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-4" id="preInspectionChecklist">
+<!-- Dynamic checklist will be populated here -->
+</div>
+<div class="mt-4">
+<label class="form-label" for="otherObservations">Other observations (please specify):</label>
+<textarea class="form-textarea" id="otherObservations" placeholder="Enter any additional observations..." rows="2"></textarea>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">Inspection Photos (Before Service)</label>
+<label class="photo-upload-area mb-4" for="photoInputInspection" id="photoUploadInspection">
+<i class="fas fa-camera-retro text-3xl sm:text-4xl text-blue-500 mb-2"></i>
+<p class="text-sm sm:text-base">Upload Inspection Photos</p>
+</label>
+<input accept="image/*" class="sr-only" id="photoInputInspection" multiple="" type="file"/>
+<div class="mt-4 grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4" id="photoPreviewInspection">
+</div>
+</div>
+</fieldset>
+<fieldset class="border p-3 sm:p-4 rounded-md">
+<legend class="text-xl font-bold text-green-700 px-2">Phase 2: Work Done &amp; Recommendations Report</legend>
+<div class="form-group mt-4">
+<label class="form-label">Work Performed Checklist</label>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-4" id="workPerformedChecklist">
+<!-- Dynamic checklist will be populated here -->
+</div>
+<div class="mt-4">
+<label class="form-label" for="otherWorkPerformed">Other work performed (specify):</label>
+<textarea class="form-textarea" id="otherWorkPerformed" placeholder="Enter any additional work performed..." rows="2"></textarea>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label" for="workPerformed">Additional Work Performed Details</label>
+<textarea class="form-textarea" id="workPerformed" placeholder="Describe any additional tasks, repairs, or specific details about the work done." rows="4"></textarea>
+</div>
+<div class="form-group">
+<label class="form-label" for="recommendations">Recommendations for Customer</label>
+<textarea class="form-textarea" id="recommendations" placeholder="Suggest any follow-up actions, future maintenance, or improvements." rows="4"></textarea>
+</div>
+<div class="form-group">
+<label class="form-label">Work Done Photos (After Service)</label>
+<label class="photo-upload-area mb-4" for="photoInputWorkDone" id="photoUploadWorkDone">
+<i class="fas fa-tools text-3xl sm:text-4xl text-green-500 mb-2"></i>
+<p class="text-sm sm:text-base">Upload Work Done Photos</p>
+</label>
+<input accept="image/*" class="sr-only" id="photoInputWorkDone" multiple="" type="file"/>
+<div class="mt-4 grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4" id="photoPreviewWorkDone">
+</div>
+</div>
+</fieldset>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const reportTypeSelector = document.getElementById("reportType");
+        const qrSection = document.getElementById("qrSection");
+
+        reportTypeSelector.addEventListener("change", function() {
+            if (this.value === "QR") {
+                qrSection.style.display = "block";
+            } else {
+                qrSection.style.display = "none";
+            }
+        });
+    });
+</script>
+<div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 mt-6 sm:mt-8">
+<button class="btn btn-primary w-full sm:w-auto" id="saveBtn" type="button"><i class="fas fa-save mr-2"></i>Save Data</button>
+<button class="btn btn-secondary w-full sm:w-auto" id="previewBtn" type="button"><i class="fas fa-eye mr-2"></i>Preview Report</button>
+<button class="btn btn-success w-full sm:w-auto" id="generatePdfBtn" type="button"><i class="fas fa-file-pdf mr-2"></i>Generate PDF</button>
+</div>
+</form>
+</div>
+<div class="modal" id="reportModal">
+<div class="modal-content">
+<span class="close">×</span>
+<div class="modal-body" id="reportPreview">
+</div>
+</div>
+</div>
+<script type="module">
         // --- Global Error Handler ---
         window.onerror = function(message, source, lineno, colno, error) {
             console.error("Global error caught:", { message, source, lineno, colno, errorObj: error });
@@ -510,6 +637,11 @@
                 console.log("DuctInspectionApp init() called.");
                 this.setupEventListeners();
                 this.setDefaultDate();
+                
+                // Initialize calculator if QR section is visible
+                if (typeof calculateQuote === 'function') {
+                    calculateQuote();
+                }
             }
 
             setupEventListeners() {
@@ -537,6 +669,24 @@
                     photoUploadWorkDoneLabel.addEventListener('dragleave', () => { photoUploadWorkDoneLabel.style.borderColor = '#3498db'; photoUploadWorkDoneLabel.classList.remove('bg-green-100'); });
                     photoUploadWorkDoneLabel.addEventListener('drop', (e) => { e.preventDefault(); photoUploadWorkDoneLabel.style.borderColor = '#3498db'; photoUploadWorkDoneLabel.classList.remove('bg-green-100'); this.handlePhotoUpload('workDone', e); });
                 } else { console.error("photoUploadWorkDoneLabel not found!"); }
+
+                // QR Calculator event listeners
+                const calculatorFields = ["materialCost", "laborCost", "otherCost", "discount", "discountType"];
+                calculatorFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.addEventListener("input", () => {
+                            if (typeof calculateQuote === 'function') {
+                                calculateQuote();
+                            }
+                        });
+                        field.addEventListener("change", () => {
+                            if (typeof calculateQuote === 'function') {
+                                calculateQuote();
+                            }
+                        });
+                    }
+                });
 
                 const addressInput = document.getElementById('address');
                 if (addressInput) {
@@ -777,18 +927,36 @@
 
             getFormData() {
                 console.log("getFormData called.");
-                const formData = {}; const form = document.getElementById('inspectionForm'); if (!form) return formData;
+                const formData = {}; 
+                const form = document.getElementById('inspectionForm'); 
+                if (!form) return formData;
+                
+                // Get all form elements
                 const elements = form.querySelectorAll('input, select, textarea');
                 elements.forEach(el => {
                     if (!el.id && !el.name) return; 
                     const key = el.id || el.name;
                     if (el.type === 'checkbox') {
-                        if (el.name === 'checklist') { if (!formData.checklist) formData.checklist = []; if (el.checked) formData.checklist.push(el.value); } 
-                        else { formData[key] = el.checked; }
+                        if (el.name === 'checklist') { 
+                            if (!formData.checklist) formData.checklist = []; 
+                            if (el.checked) formData.checklist.push(el.value); 
+                        } else { 
+                            formData[key] = el.checked; 
+                        }
                     } else if (el.type !== 'file' && el.id !== 'duration') { 
                          formData[key] = el.value; 
                     }
                 });
+                
+                // Also get QR calculator data (in case it's outside the form)
+                const qrElements = ['materialCost', 'laborCost', 'otherCost', 'discount', 'discountType', 'totalQuote'];
+                qrElements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.value) {
+                        formData[id] = el.value;
+                    }
+                });
+                
                 // Collect inspection checklist
                 formData.inspectionChecklist = Array.from(form.querySelectorAll('input[name="inspectionChecklist"]:checked')).map(cb => cb.value);
                 // Collect work performed checklist
@@ -799,19 +967,19 @@
             }
 
             previewReport() {
-                console.log("previewReport called.");
                 const formData = this.getFormData();
                 if (!formData.customerName || !formData.address || !formData.serviceDate) {
                     showMessage('Fill required fields (Customer, Address, Date) before previewing.', 'error'); return;
                 }
-                const reportContent = this.generateReportHTML(formData);
+                const reportType = document.getElementById('reportType').value;
+                const reportContent = this.generateReportHTML(formData, reportType);
                 const previewEl = document.getElementById('reportPreview');
                 const modalEl = document.getElementById('reportModal');
                 if(previewEl) previewEl.innerHTML = reportContent;
                 if(modalEl) modalEl.style.display = 'block';
             }
 
-            generateReportHTML(data) {
+            generateReportHTML(data, reportType) {
                 console.log("generateReportHTML called.");
                 const checkedItems = data.checklist || [];
                 const checklistHTML = checkedItems.length > 0 
@@ -831,69 +999,77 @@
                 }).join('');
 
                 const logoUrlForPreview = "https://thebayservices.com/wp-content/uploads/2022/07/bay-services-logo.png";
-
-                return `
-                    <div class="report-content p-2 sm:p-4">
-                        <div class="report-header text-center mb-4 pb-4 border-b">
-                            <img src="${logoUrlForPreview}" alt="Bay Services Logo" class="report-logo-preview mx-auto" onerror="this.style.display='none'; console.error('Failed to load preview logo from URL.')">
-                            <h1 class="report-title text-xl sm:text-2xl font-bold text-gray-800">INSPECTION & WORK REPORT</h1>
-                            <p class="text-gray-600 text-sm sm:text-base"><strong>Date:</strong> ${data.serviceDate || 'N/A'}</p>
-                        </div>
-                        <div class="report-section mb-4">
-                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Customer & Service Information</h3>
-                            <p class="text-sm sm:text-base"><strong>Name:</strong> ${data.customerName || 'N/A'}</p>
-                            <p class="text-sm sm:text-base"><strong>Phone:</strong> ${data.phoneNumber || 'N/A'}</p>
-                            <p class="text-sm sm:text-base"><strong>Email:</strong> ${data.email || 'N/A'}</p>
-                            <p class="text-sm sm:text-base"><strong>Address:</strong> ${data.address || 'N/A'}</p>
-                            <p class="text-sm sm:text-base"><strong>Service Type:</strong> ${data.serviceType || 'N/A'}</p>
-                            <p class="text-sm sm:text-base"><strong>Technician:</strong> ${data.technician || 'N/A'}</p>
-                        </div>
-                        
-                        <h2 class="report-phase-title">Phase 1: Pre-Service Inspection Report</h2>
-                        <div class="report-section mb-4">
-                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Initial Observations & Findings</h3>
-                            <div id="preInspectionChecklist" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 mb-4">
-                                <!-- Dynamic checklist will be populated here -->
-                            </div>
-                            <div class="mt-4">
-                                <label for="otherObservations" class="form-label">Other observations (please specify):</label>
-                                <textarea id="otherObservations" class="form-textarea" rows="2" placeholder="Enter any additional observations..."></textarea>
-                            </div>
-                        </div>
-                        ${(data.inspectionPhotos && data.inspectionPhotos.length > 0) ? `
-                        <div class="report-section mb-4">
+                let html = `<div class="report-content p-2 sm:p-4">
+                    <div class="report-header text-center mb-4 pb-4 border-b">
+                        <img src="${logoUrlForPreview}" alt="Bay Services Logo" class="report-logo-preview mx-auto" onerror="this.style.display='none'; console.error('Failed to load preview logo from URL.')">
+                        <h1 class="report-title text-xl sm:text-2xl font-bold text-gray-800">${reportType === 'IR' ? 'INSPECTION REPORT' : reportType === 'SDR' ? 'SERVICE DONE REPORT' : 'QUOTING REPORT'}</h1>
+                        <p class="text-gray-600 text-sm sm:text-base"><strong>Date:</strong> ${data.serviceDate || 'N/A'}</p>
+                    </div>
+                    <div class="report-section mb-4">
+                        <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Customer & Service Information</h3>
+                        <p class="text-sm sm:text-base"><strong>Name:</strong> ${data.customerName || 'N/A'}</p>
+                        <p class="text-sm sm:text-base"><strong>Phone:</strong> ${data.phoneNumber || 'N/A'}</p>
+                        <p class="text-sm sm:text-base"><strong>Email:</strong> ${data.email || 'N/A'}</p>
+                        <p class="text-sm sm:text-base"><strong>Address:</strong> ${data.address || 'N/A'}</p>
+                        <p class="text-sm sm:text-base"><strong>Service Type:</strong> ${data.serviceType || 'N/A'}</p>
+                        <p class="text-sm sm:text-base"><strong>Technician:</strong> ${data.technician || 'N/A'}</p>
+                    </div>`;
+                if (reportType === 'IR') {
+                    html += `<h2 class="report-phase-title">Pre-Service Inspection Report</h2>
+                    <div class="report-section mb-4">
+                        <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Initial Observations & Findings</h3>
+                        <div>${data.otherObservations || ''}</div>
+                    </div>`;
+                    if (data.inspectionPhotos && data.inspectionPhotos.length > 0) {
+                        html += `<div class="report-section mb-4">
                             <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Inspection Photos</h3>
                             <div class="report-photos flex flex-wrap gap-2">${inspectionPhotosHTML}</div>
-                        </div>` : ''}
-
-                        <h2 class="report-phase-title">Phase 2: Work Done & Recommendations Report</h2>
-                        <div class="report-section mb-4">
-                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Work Performed Checklist</h3>
-                            <ul class="list-none pl-0 mb-2 text-sm sm:text-base">${checklistHTML}</ul>
-                        </div>
-                        ${data.workPerformed ? `
-                        <div class="report-section mb-4">
+                        </div>`;
+                    }
+                    // No Service Completion section for IR
+                } else if (reportType === 'SDR') {
+                    html += `<h2 class="report-phase-title">Work Done & Recommendations Report</h2>
+                    <div class="report-section mb-4">
+                        <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Work Performed Checklist</h3>
+                        <ul class="list-none pl-0 mb-2 text-sm sm:text-base">${checklistHTML}</ul>
+                    </div>`;
+                    if (data.workPerformed) {
+                        html += `<div class="report-section mb-4">
                             <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Additional Work Performed Details</h3>
                             <p class="whitespace-pre-wrap text-sm sm:text-base">${data.workPerformed}</p>
-                        </div>` : ''}
-                        ${data.recommendations ? `
-                        <div class="report-section mb-4">
+                        </div>`;
+                    }
+                    if (data.recommendations) {
+                        html += `<div class="report-section mb-4">
                             <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Recommendations for Customer</h3>
                             <p class="whitespace-pre-wrap text-sm sm:text-base">${data.recommendations}</p>
-                        </div>` : ''}
-                        ${(data.workDonePhotos && data.workDonePhotos.length > 0) ? `
-                        <div class="report-section mb-4">
+                        </div>`;
+                    }
+                    if (data.workDonePhotos && data.workDonePhotos.length > 0) {
+                        html += `<div class="report-section mb-4">
                             <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Work Done Photos</h3>
                             <div class="report-photos flex flex-wrap gap-2">${workDonePhotosHTML}</div>
-                        </div>` : ''}
-
-                        <div class="report-section mt-6 pt-4 border-t">
-                            <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Service Completion</h3>
-                            <p class="text-sm sm:text-base">This report certifies that the above services have been completed by Bay Services on ${data.serviceDate || 'the specified date'}.</p><br>
-                            <p class="text-sm sm:text-base"><strong>Technician Signature:</strong> ${data.technician || '_________________'}</p>
-                            <p class="mt-1 text-sm sm:text-base"><strong>Customer Signature:</strong> _________________</p>
-                        </div>
+                        </div>`;
+                    }
+                    html += `<div class="report-section mt-6 pt-4 border-t">
+                        <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Service Completion</h3>
+                        <p class="text-sm sm:text-base">This report certifies that the above services have been completed by Bay Services on ${data.serviceDate || 'the specified date'}.</p><br>
+                        <p class="text-sm sm:text-base"><strong>Technician Signature:</strong> ${data.technician || '_________________'}</p>
+                        <p class="mt-1 text-sm sm:text-base"><strong>Customer Signature:</strong> _________________</p>
                     </div>`;
+                } else if (reportType === 'QR') {
+                    html += `<h2 class="report-phase-title">Quoting Report</h2>
+                    <div class="report-section mb-4">
+                        <h3 class="text-base sm:text-lg font-semibold text-blue-600 mb-2">Price Calculator</h3>
+                        <p><strong>Material Cost:</strong> $${data.materialCost || '0'}</p>
+                        <p><strong>Labor Cost:</strong> $${data.laborCost || '0'}</p>
+                        <p><strong>Other Costs:</strong> $${data.otherCost || '0'}</p>
+                        <p><strong>Discount:</strong> ${data.discountType === 'percent' ? data.discount + '%' : '$' + data.discount}</p>
+                        <p><strong>Total Quote:</strong> $${data.totalQuote || '0'}</p>
+                    </div>`;
+                }
+                html += `</div>`;
+                return html;
             }
             
             async generatePDF() {
@@ -902,6 +1078,7 @@
                 if (!formData.customerName || !formData.address || !formData.serviceDate) {
                     showMessage('Fill required fields before PDF generation.', 'error'); return;
                 }
+                const reportType = document.getElementById('reportType').value;
 
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -1024,41 +1201,104 @@
                     const padding = 10;
                     const margin = 10;
                     const boxWidth = contentWidth;
-                    // Calculate max photo size to fit all photos in the available height
-                    let photoSize = 40;
-                    let photosPerRow = Math.floor((boxWidth - (padding * 2)) / (photoSize + 10));
+                    
+                    // Adaptive photo sizing based on quantity
+                    let photoSize = 40; // Default size
+                    let photosPerRow = 3; // Default 3 per row
+                    
+                    if (photos.length <= 3) {
+                        // Few photos - make them larger
+                        photoSize = 60;
+                        photosPerRow = 2;
+                    } else if (photos.length <= 6) {
+                        // Medium amount - standard size
+                        photoSize = 45;
+                        photosPerRow = 3;
+                    } else if (photos.length <= 12) {
+                        // Many photos - smaller size
+                        photoSize = 35;
+                        photosPerRow = 4;
+                    } else {
+                        // Very many photos - smallest size
+                        photoSize = 30;
+                        photosPerRow = 5;
+                    }
+                    
+                    // Recalculate photos per row based on available width
+                    photosPerRow = Math.floor((boxWidth - (padding * 2)) / (photoSize + 10));
+                    if (photosPerRow < 1) photosPerRow = 1;
+                    
                     let rows = Math.ceil(photos.length / photosPerRow);
                     let boxHeight = (rows * (photoSize + 10)) + (padding * 2) + headerFontSize + 10;
-                    // If too tall, shrink photo size
+                    
+                    // If too tall, reduce photo size but maintain quality
                     if (maxHeight && boxHeight > maxHeight) {
-                        rows = Math.ceil(photos.length / photosPerRow);
-                        photoSize = Math.floor((maxHeight - (padding * 2) - headerFontSize - 10) / rows) - 10;
-                        photosPerRow = Math.floor((boxWidth - (padding * 2)) / (photoSize + 10));
-                        rows = Math.ceil(photos.length / photosPerRow);
-                        boxHeight = (rows * (photoSize + 10)) + (padding * 2) + headerFontSize + 10;
+                        const availableHeight = maxHeight - (padding * 2) - headerFontSize - 10;
+                        const minPhotoSize = 20;
+                        const maxPhotoSize = Math.floor(availableHeight / rows) - 10;
+                        
+                        // Try to find optimal size
+                        for (let testSize = Math.min(photoSize, maxPhotoSize); testSize >= minPhotoSize; testSize -= 2) {
+                            const testPhotosPerRow = Math.floor((boxWidth - (padding * 2)) / (testSize + 10));
+                            if (testPhotosPerRow < 1) continue;
+                            
+                            const testRows = Math.ceil(photos.length / testPhotosPerRow);
+                            const testBoxHeight = (testRows * (testSize + 10)) + (padding * 2) + headerFontSize + 10;
+                            
+                            if (testBoxHeight <= maxHeight) {
+                                photoSize = testSize;
+                                photosPerRow = testPhotosPerRow;
+                                rows = testRows;
+                                boxHeight = testBoxHeight;
+                                break;
+                            }
+                        }
+                        
+                        // If still can't fit, show message
+                        if (boxHeight > maxHeight) {
+                            pdf.setFillColor(245, 247, 252);
+                            pdf.setDrawColor(180, 190, 210);
+                            pdf.roundedRect(leftMargin, yPosition, boxWidth, 30 + headerFontSize, 5, 5, 'FD');
+                            pdf.setFontSize(headerFontSize + 1);
+                            pdf.setTextColor(...primaryColor);
+                            pdf.setFont(undefined, 'bold');
+                            pdf.text(title, leftMargin + padding, yPosition + padding + (headerFontSize * 0.45));
+                            pdf.setFontSize(bodyFontSize + 1);
+                            pdf.setFont(undefined, 'normal');
+                            pdf.setTextColor(200, 0, 0);
+                            pdf.text(`Too many photos (${photos.length}). See attached for more.`, leftMargin + padding, yPosition + padding + headerFontSize + 10);
+                            return yPosition + 30 + headerFontSize + margin;
+                        }
                     }
+                    
                     // Draw box
                     pdf.setFillColor(245, 247, 252);
                     pdf.setDrawColor(180, 190, 210);
                     pdf.roundedRect(leftMargin, yPosition, boxWidth, boxHeight, 5, 5, 'FD');
-                    // Add title (no emoji)
+                    
+                    // Add title
                     pdf.setFontSize(headerFontSize + 1);
                     pdf.setTextColor(...primaryColor);
                     pdf.setFont(undefined, 'bold');
                     pdf.text(title, leftMargin + padding, yPosition + padding + (headerFontSize * 0.45));
+                    
                     // Add photos in grid
                     let currentX = leftMargin + padding;
                     let currentY = yPosition + padding + headerFontSize + 10;
                     let rowPhotoCount = 0;
+                    
                     photos.forEach((photo, index) => {
                         if (rowPhotoCount === photosPerRow) {
                             currentX = leftMargin + padding;
                             currentY += photoSize + 10;
                             rowPhotoCount = 0;
                         }
+                        
+                        // Add photo border
                         pdf.setDrawColor(200, 200, 200);
                         pdf.setLineWidth(0.5);
                         pdf.rect(currentX - 2, currentY - 2, photoSize + 4, photoSize + 4, 'S');
+                        
                         try {
                             pdf.addImage(
                                 photo.data,
@@ -1070,10 +1310,18 @@
                             );
                         } catch (e) {
                             console.error("Error adding photo:", e);
+                            // Add error placeholder
+                            pdf.setFillColor(240, 240, 240);
+                            pdf.rect(currentX, currentY, photoSize, photoSize, 'F');
+                            pdf.setTextColor(150, 150, 150);
+                            pdf.setFontSize(8);
+                            pdf.text('Error', currentX + photoSize/2, currentY + photoSize/2, { align: 'center' });
                         }
+                        
                         currentX += photoSize + 10;
                         rowPhotoCount++;
                     });
+                    
                     return yPosition + boxHeight + margin;
                 };
 
@@ -1085,68 +1333,376 @@
                     pdf.text("www.thebayservices.com", pageWidth / 2, footerY + 5, { align: 'center' });
                 };
 
-                // --- PHASE 1: INSPECTION (Page 1) ---
-                let yPosition = topMargin;
-                yPosition = addLogo(yPosition);
-                yPosition = addHeader("INSPECTION & WORK REPORT", yPosition);
-                yPosition = addSubHeader(`Service Date: ${formData.serviceDate}`, yPosition);
-                // Divider
-                pdf.setDrawColor(200, 210, 230);
-                pdf.setLineWidth(0.7);
-                pdf.line(leftMargin, yPosition + 2, pageWidth - rightMargin, yPosition + 2);
-                yPosition += 8;
-                // Customer Info Box
-                // ... customer info code ...
-                // Section separation
-                yPosition += 5;
-                yPosition = addHeader("PHASE 1: PRE-SERVICE INSPECTION", yPosition, headerFontSize + 4);
-                yPosition += 5;
-                // Inspection Checklist Box
-                const inspectionChecklistItems = formData.inspectionChecklist || [];
-                yPosition = addChecklistBox("Initial Observations & Findings", inspectionChecklistItems, yPosition);
-                // Inspection Photos Box (fit to remaining space)
-                if (this.inspectionPhotos && this.inspectionPhotos.length > 0) {
+                // Generate PDF based on report type
+                if (reportType === 'QR') {
+                    // QUOTING REPORT - Single page with calculator
+                    let yPosition = topMargin;
+                    yPosition = addLogo(yPosition);
+                    yPosition = addHeader("QUOTING REPORT", yPosition);
+                    yPosition = addSubHeader(`Service Date: ${formData.serviceDate}`, yPosition);
+                    
+                    // Divider
+                    pdf.setDrawColor(200, 210, 230);
+                    pdf.setLineWidth(0.7);
+                    pdf.line(leftMargin, yPosition + 2, pageWidth - rightMargin, yPosition + 2);
+                    yPosition += 8;
+                    
+                    // Customer Info Box
+                    const customerInfoFields = [
+                        { label: 'Name', value: formData.customerName },
+                        { label: 'Phone', value: formData.phoneNumber || 'N/A' },
+                        { label: 'Email', value: formData.email || 'N/A' },
+                        { label: 'Address', value: formData.address },
+                        { label: 'Service Type', value: formData.serviceType },
+                        { label: 'Technician', value: formData.technician || 'N/A' }
+                    ];
+                    const boxPadding = 10;
+                    const boxMargin = 10;
+                    const boxWidth = contentWidth;
+                    const fieldHeight = bodyFontSize * 0.7 + 2;
+                    const boxHeight = customerInfoFields.length * fieldHeight + boxPadding * 2;
+                    pdf.setFillColor(245, 247, 252);
+                    pdf.setDrawColor(180, 190, 210);
+                    pdf.roundedRect(leftMargin, yPosition, boxWidth, boxHeight, 5, 5, 'FD');
+                    pdf.setFontSize(headerFontSize + 1);
+                    pdf.setTextColor(...primaryColor);
+                    pdf.setFont(undefined, 'bold');
+                    pdf.text('Customer Information', leftMargin + boxPadding, yPosition + boxPadding + 2);
+                    pdf.setFontSize(bodyFontSize + 1);
+                    pdf.setFont(undefined, 'normal');
+                    pdf.setTextColor(30, 30, 30);
+                    let infoY = yPosition + boxPadding + 10;
+                    customerInfoFields.forEach(field => {
+                        pdf.setFont(undefined, 'bold');
+                        pdf.text(`${field.label}:`, leftMargin + boxPadding, infoY);
+                        pdf.setFont(undefined, 'normal');
+                        pdf.text(`${field.value}`, leftMargin + boxPadding + 32, infoY);
+                        infoY += fieldHeight;
+                    });
+                    yPosition += boxHeight + boxMargin;
+                    
+                    // Price Calculator Box
                     yPosition += 5;
-                    const maxPhotoBoxHeight = pageHeight - bottomMargin - yPosition - 20;
-                    yPosition = addPhotoBox("Inspection Photos", this.inspectionPhotos, yPosition, maxPhotoBoxHeight);
-                }
-                addFooter(1, 2);
-                // --- PHASE 2: WORK DONE (Page 2) ---
-                pdf.addPage();
-                yPosition = topMargin;
-                yPosition = addLogo(yPosition);
-                yPosition = addHeader("PHASE 2: WORK DONE & RECOMMENDATIONS", yPosition, headerFontSize + 4);
-                yPosition += 10;
-                // Work Performed Checklist Box
-                const workChecklistItems = formData.workPerformedChecklist || [];
-                yPosition = addChecklistBox("Work Performed", workChecklistItems, yPosition);
-                // Additional Work Details Box
-                if (formData.workPerformed) {
+                    const calculatorContent = [
+                        `Material Cost: $${formData.materialCost || '0'}`,
+                        `Labor Cost: $${formData.laborCost || '0'}`,
+                        `Other Costs: $${formData.otherCost || '0'}`,
+                        `Discount: ${formData.discountType === 'percent' ? (formData.discount || '0') + '%' : '$' + (formData.discount || '0')}`,
+                        `Total Quote: $${formData.totalQuote || '0'}`
+                    ].join('\n');
+                    yPosition = addBoxedSection("Price Calculator", calculatorContent, yPosition);
+                    
+                    addFooter(1, 1);
+                    
+                } else if (reportType === 'IR') {
+                    // INSPECTION REPORT - Only inspection content, NO Phase 2, NO Work Done, NO Recommendations
+                    let currentPage = 1;
+                    let totalPages = 1;
+                    const inspectionChecklistItems = formData.inspectionChecklist || [];
+                    const inspectionPhotos = this.inspectionPhotos || [];
+                    if (inspectionPhotos.length > 0) {
+                        let photosPerPage;
+                        if (inspectionPhotos.length <= 3) {
+                            photosPerPage = 2;
+                        } else if (inspectionPhotos.length <= 6) {
+                            photosPerPage = 6;
+                        } else if (inspectionPhotos.length <= 12) {
+                            photosPerPage = 12;
+                        } else {
+                            photosPerPage = 15;
+                        }
+                        totalPages += Math.ceil(inspectionPhotos.length / photosPerPage);
+                    }
+                    if (inspectionChecklistItems.length > 20) {
+                        totalPages += 1;
+                    }
+                    let yPosition = topMargin;
+                    yPosition = addLogo(yPosition);
+                    yPosition = addHeader("INSPECTION REPORT", yPosition);
+                    yPosition = addSubHeader(`Service Date: ${formData.serviceDate}`, yPosition);
+                    pdf.setDrawColor(200, 210, 230);
+                    pdf.setLineWidth(0.7);
+                    pdf.line(leftMargin, yPosition + 2, pageWidth - rightMargin, yPosition + 2);
+                    yPosition += 8;
+                    // Customer Info
+                    const customerInfoFields = [
+                        { label: 'Name', value: formData.customerName },
+                        { label: 'Phone', value: formData.phoneNumber || 'N/A' },
+                        { label: 'Email', value: formData.email || 'N/A' },
+                        { label: 'Address', value: formData.address },
+                        { label: 'Service Type', value: formData.serviceType },
+                        { label: 'Technician', value: formData.technician || 'N/A' }
+                    ];
+                    const boxPadding = 10;
+                    const boxMargin = 10;
+                    const boxWidth = contentWidth;
+                    const fieldHeight = bodyFontSize * 0.7 + 2;
+                    const boxHeight = customerInfoFields.length * fieldHeight + boxPadding * 2;
+                    pdf.setFillColor(245, 247, 252);
+                    pdf.setDrawColor(180, 190, 210);
+                    pdf.roundedRect(leftMargin, yPosition, boxWidth, boxHeight, 5, 5, 'FD');
+                    pdf.setFontSize(headerFontSize + 1);
+                    pdf.setTextColor(...primaryColor);
+                    pdf.setFont(undefined, 'bold');
+                    pdf.text('Customer Information', leftMargin + boxPadding, yPosition + boxPadding + 2);
+                    pdf.setFontSize(bodyFontSize + 1);
+                    pdf.setFont(undefined, 'normal');
+                    pdf.setTextColor(30, 30, 30);
+                    let infoY = yPosition + boxPadding + 10;
+                    customerInfoFields.forEach(field => {
+                        pdf.setFont(undefined, 'bold');
+                        pdf.text(`${field.label}:`, leftMargin + boxPadding, infoY);
+                        pdf.setFont(undefined, 'normal');
+                        pdf.text(`${field.value}`, leftMargin + boxPadding + 32, infoY);
+                        infoY += fieldHeight;
+                    });
+                    yPosition += boxHeight + boxMargin;
                     yPosition += 5;
-                    yPosition = addBoxedSection("Additional Work Details", formData.workPerformed, yPosition);
-                }
-                // Recommendations Box
-                if (formData.recommendations) {
+                    // Only this section header, no Phase wording
+                    yPosition = addHeader("PRE-SERVICE INSPECTION", yPosition, headerFontSize + 4);
                     yPosition += 5;
-                    yPosition = addBoxedSection("Recommendations", formData.recommendations, yPosition);
-                }
-                // Work Done Photos Box (fit to remaining space)
-                if (this.workDonePhotos && this.workDonePhotos.length > 0) {
+                    yPosition = addChecklistBox("Initial Observations & Findings", inspectionChecklistItems, yPosition);
+                    // Photos
+                    if (inspectionPhotos.length > 0) {
+                        const estimatedPhotoHeight = Math.ceil(inspectionPhotos.length / 3) * 50 + 50;
+                        if (yPosition + estimatedPhotoHeight > pageHeight - bottomMargin) {
+                            addFooter(currentPage, totalPages);
+                            pdf.addPage();
+                            currentPage++;
+                            yPosition = topMargin;
+                            yPosition = addLogo(yPosition);
+                            yPosition = addHeader("INSPECTION PHOTOS", yPosition, headerFontSize + 4);
+                            yPosition += 10;
+                        }
+                        const photosPerPage = Math.floor((pageHeight - topMargin - bottomMargin - 100) / 50);
+                        let photoIndex = 0;
+                        while (photoIndex < inspectionPhotos.length) {
+                            const photosForThisPage = inspectionPhotos.slice(photoIndex, photoIndex + photosPerPage);
+                            const maxPhotoBoxHeight = pageHeight - bottomMargin - yPosition - 20;
+                            const photoTitle = photoIndex === 0 ? "Inspection Photos" : `Inspection Photos (Page ${Math.floor(photoIndex / photosPerPage) + 1})`;
+                            yPosition = addPhotoBox(photoTitle, photosForThisPage, yPosition, maxPhotoBoxHeight);
+                            photoIndex += photosPerPage;
+                            if (photoIndex < inspectionPhotos.length) {
+                                addFooter(currentPage, totalPages);
+                                pdf.addPage();
+                                currentPage++;
+                                yPosition = topMargin;
+                                yPosition = addLogo(yPosition);
+                                yPosition = addHeader(`INSPECTION PHOTOS (Page ${currentPage} of ${totalPages})`, yPosition, headerFontSize + 4);
+                                yPosition += 10;
+                            }
+                        }
+                    }
+                    addFooter(currentPage, totalPages);
+                } else {
+                    // SDR - Service Done Report (NO Phase 1, NO Inspection content)
+                    let currentPage = 1;
+                    let totalPages = 1;
+                    
+                    // Calculate if we need more pages for photos with adaptive sizing
+                    const workDonePhotos = this.workDonePhotos || [];
+                    if (workDonePhotos.length > 0) {
+                        let photosPerPage;
+                        if (workDonePhotos.length <= 3) {
+                            photosPerPage = 2; // Larger photos
+                        } else if (workDonePhotos.length <= 6) {
+                            photosPerPage = 6; // Standard size
+                        } else if (workDonePhotos.length <= 12) {
+                            photosPerPage = 12; // Smaller photos
+                        } else {
+                            photosPerPage = 15; // Smallest photos
+                        }
+                        totalPages += Math.ceil(workDonePhotos.length / photosPerPage);
+                    }
+                    
+                    // Add pages for long text content
+                    const workPerformed = formData.workPerformed || '';
+                    const recommendations = formData.recommendations || '';
+                    const workChecklistItemsCount = (formData.workPerformedChecklist || []).length;
+                    
+                    if (workPerformed.length > 500 || recommendations.length > 500 || workChecklistItemsCount > 25) {
+                        totalPages += 1;
+                    }
+                    
+                    // --- SERVICE DONE REPORT (Page 1) ---
+                    let yPosition = topMargin;
+                    yPosition = addLogo(yPosition);
+                    yPosition = addHeader("SERVICE DONE REPORT", yPosition);
+                    yPosition = addSubHeader(`Service Date: ${formData.serviceDate}`, yPosition);
+                    
+                    // Divider
+                    pdf.setDrawColor(200, 210, 230);
+                    pdf.setLineWidth(0.7);
+                    pdf.line(leftMargin, yPosition + 2, pageWidth - rightMargin, yPosition + 2);
+                    yPosition += 8;
+                    
+                    // Customer Info Box
+                    const customerInfoFields = [
+                        { label: 'Name', value: formData.customerName },
+                        { label: 'Phone', value: formData.phoneNumber || 'N/A' },
+                        { label: 'Email', value: formData.email || 'N/A' },
+                        { label: 'Address', value: formData.address },
+                        { label: 'Service Type', value: formData.serviceType },
+                        { label: 'Technician', value: formData.technician || 'N/A' }
+                    ];
+                    const boxPadding = 10;
+                    const boxMargin = 10;
+                    const boxWidth = contentWidth;
+                    const fieldHeight = bodyFontSize * 0.7 + 2;
+                    const boxHeight = customerInfoFields.length * fieldHeight + boxPadding * 2;
+                    pdf.setFillColor(245, 247, 252);
+                    pdf.setDrawColor(180, 190, 210);
+                    pdf.roundedRect(leftMargin, yPosition, boxWidth, boxHeight, 5, 5, 'FD');
+                    pdf.setFontSize(headerFontSize + 1);
+                    pdf.setTextColor(...primaryColor);
+                    pdf.setFont(undefined, 'bold');
+                    pdf.text('Customer Information', leftMargin + boxPadding, yPosition + boxPadding + 2);
+                    pdf.setFontSize(bodyFontSize + 1);
+                    pdf.setFont(undefined, 'normal');
+                    pdf.setTextColor(30, 30, 30);
+                    let infoY = yPosition + boxPadding + 10;
+                    customerInfoFields.forEach(field => {
+                        pdf.setFont(undefined, 'bold');
+                        pdf.text(`${field.label}:`, leftMargin + boxPadding, infoY);
+                        pdf.setFont(undefined, 'normal');
+                        pdf.text(`${field.value}`, leftMargin + boxPadding + 32, infoY);
+                        infoY += fieldHeight;
+                    });
+                    yPosition += boxHeight + boxMargin;
+                    
+                    // Section separation
                     yPosition += 5;
-                    const maxPhotoBoxHeight = pageHeight - bottomMargin - yPosition - 20;
-                    yPosition = addPhotoBox("Work Done Photos", this.workDonePhotos, yPosition, maxPhotoBoxHeight);
+                    yPosition = addHeader("WORK DONE & RECOMMENDATIONS", yPosition, headerFontSize + 4);
+                    yPosition += 10;
+                    
+                    // Work Performed Checklist Box
+                    const workChecklistItems = formData.workPerformedChecklist || [];
+                    yPosition = addChecklistBox("Work Performed", workChecklistItems, yPosition);
+                    
+                    // Additional Work Details Box
+                    if (formData.workPerformed) {
+                        yPosition += 5;
+                        yPosition = addBoxedSection("Additional Work Details", formData.workPerformed, yPosition);
+                    }
+                    
+                    // Recommendations Box
+                    if (formData.recommendations) {
+                        yPosition += 5;
+                        yPosition = addBoxedSection("Recommendations", formData.recommendations, yPosition);
+                    }
+                    
+                    // Work Done Photos Box with pagination
+                    if (workDonePhotos.length > 0) {
+                        const photosPerPage = Math.floor((pageHeight - topMargin - bottomMargin - 100) / 50);
+                        let photoIndex = 0;
+                        
+                        while (photoIndex < workDonePhotos.length) {
+                            const photosForThisPage = workDonePhotos.slice(photoIndex, photoIndex + photosPerPage);
+                            const maxPhotoBoxHeight = pageHeight - bottomMargin - yPosition - 20;
+                            const photoTitle = photoIndex === 0 ? "Work Done Photos" : `Work Done Photos (Page ${Math.floor(photoIndex / photosPerPage) + 1})`;
+                            yPosition = addPhotoBox(photoTitle, photosForThisPage, yPosition, maxPhotoBoxHeight);
+                            
+                            photoIndex += photosPerPage;
+                            
+                            if (photoIndex < workDonePhotos.length) {
+                                addFooter(currentPage, totalPages);
+                                pdf.addPage();
+                                currentPage++;
+                                yPosition = topMargin;
+                                yPosition = addLogo(yPosition);
+                                yPosition = addHeader(`WORK DONE PHOTOS (Page ${currentPage} of ${totalPages})`, yPosition, headerFontSize + 4);
+                                yPosition += 10;
+                            }
+                        }
+                    }
+                    
+                    // Service Completion Box (only for SDR)
+                    yPosition += 5;
+                    const completionContent = [
+                        `This report certifies that the above services have been completed by Bay Services on ${formData.serviceDate}.`,
+                        `Technician Signature: ${formData.technician || '_________________________'}`,
+                        `Customer Signature: _________________________`
+                    ].join('\n');
+                    
+                    // Custom options for stamp effect
+                    const stampOptions = {
+                        padding: 14,
+                        margin: 12,
+                        bgColor: [255, 251, 204], // Light yellow
+                        borderColor: [234, 179, 8], // Gold-500
+                        borderWidth: 2.5,
+                        titleFontSize: headerFontSize + 7,
+                        titleColor: [202, 138, 4], // Gold-700
+                        watermark: true
+                    };
+                    
+                    // Custom Service Completion box
+                    const addBoxedSectionWithStamp = (title, content, yPosition, options = {}) => {
+                        const padding = options.padding || 14;
+                        const margin = options.margin || 12;
+                        const boxWidth = contentWidth;
+                        let contentHeight = 0;
+                        pdf.setFontSize(bodyFontSize + 2);
+                        const splitContent = pdf.splitTextToSize(content, boxWidth - (padding * 2));
+                        contentHeight = splitContent.length * (bodyFontSize * 0.7);
+                        
+                        // Draw bold gold border and yellow background
+                        pdf.setFillColor(...(options.bgColor || [255, 251, 204]));
+                        pdf.setDrawColor(...(options.borderColor || [234, 179, 8]));
+                        pdf.setLineWidth(options.borderWidth || 2.5);
+                        pdf.roundedRect(leftMargin, yPosition, boxWidth, contentHeight + (padding * 2) + (options.titleFontSize || headerFontSize + 7), 7, 7, 'FD');
+                        
+                        // Watermark
+                        if (options.watermark) {
+                            pdf.saveGraphicsState && pdf.saveGraphicsState();
+                            pdf.setTextColor(234, 179, 8, 0.12);
+                            pdf.setFontSize(48);
+                            pdf.setFont(undefined, 'bold');
+                            pdf.text('COMPLETED', leftMargin + boxWidth/2, yPosition + (contentHeight/2) + padding + 20, {angle: -20, align: 'center', opacity: 0.12});
+                            pdf.restoreGraphicsState && pdf.restoreGraphicsState();
+                        }
+                        
+                        // Title
+                        pdf.setFontSize(options.titleFontSize || headerFontSize + 7);
+                        pdf.setTextColor(...(options.titleColor || [202, 138, 4]));
+                        pdf.setFont(undefined, 'bold');
+                        pdf.text(title, leftMargin + padding, yPosition + padding + ((options.titleFontSize || headerFontSize + 7) * 0.45));
+                        
+                        // Content
+                        pdf.setFontSize(bodyFontSize + 2);
+                        pdf.setFont(undefined, 'normal');
+                        pdf.setTextColor(80, 60, 0);
+                        pdf.text(splitContent, leftMargin + padding, yPosition + padding + (options.titleFontSize || headerFontSize + 7) + 7);
+                        
+                        // Reset line width
+                        pdf.setLineWidth(0.7);
+                        return yPosition + contentHeight + (padding * 2) + (options.titleFontSize || headerFontSize + 7) + margin;
+                    };
+                    
+                    yPosition = addBoxedSectionWithStamp("Service Completion", completionContent, yPosition, stampOptions);
+                    addFooter(currentPage, totalPages);
                 }
-                // Service Completion Box
-                yPosition += 5;
-                const completionContent = [
-                    `This report certifies that the above services have been completed by Bay Services on ${formData.serviceDate}.`,
-                    `Technician Signature: ${formData.technician || '_________________________'}`,
-                    `Customer Signature: _________________________`
-                ].join('\n');
-                yPosition = addBoxedSection("Service Completion", completionContent, yPosition);
-                addFooter(2, 2);
-                // Save the PDF
-                pdf.save(`BayServices_Report_${formData.customerName.replace(/\s+/g, '_')}_${formData.serviceDate}.pdf`);
+                
+                // Save the PDF with different naming based on report type
+                let fileName;
+                const customerName = formData.customerName.replace(/\s+/g, '_');
+                const serviceDate = formData.serviceDate;
+                
+                switch (reportType) {
+                    case 'IR':
+                        fileName = `BayServices_Inspection_Report_${customerName}_${serviceDate}.pdf`;
+                        break;
+                    case 'SDR':
+                        fileName = `BayServices_Service_Completion_Report_${customerName}_${serviceDate}.pdf`;
+                        break;
+                    case 'QR':
+                        fileName = `BayServices_Quote_${customerName}_${serviceDate}.pdf`;
+                        break;
+                    default:
+                        fileName = `BayServices_${reportType}_Report_${customerName}_${serviceDate}.pdf`;
+                }
+                
+                pdf.save(fileName);
                 showMessage('PDF generated successfully!', 'success');
             }
         }
