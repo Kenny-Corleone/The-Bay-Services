@@ -1712,6 +1712,167 @@
             const indicator = document.getElementById('javascript-running-indicator');
             if(indicator) indicator.style.display = 'none';
             
+            // PWA Install Prompt - moved here to ensure DOM is ready
+            let deferredPrompt;
+            
+            // Create install modal
+            const installModal = document.createElement('div');
+            installModal.innerHTML = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                    <div class="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">
+                        <div class="text-center">
+                            <div class="text-4xl mb-4">📱</div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Установить приложение</h3>
+                            <p class="text-gray-600 mb-6">Установите Bay Services Report на рабочий стол для быстрого доступа</p>
+                            <div class="flex space-x-3">
+                                <button id="installModalBtn" class="btn btn-primary flex-1">
+                                    <i class="fas fa-download mr-2"></i>Установить
+                                </button>
+                                <button id="dismissInstallBtn" class="btn btn-secondary flex-1">
+                                    Позже
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            installModal.style.display = 'none';
+            installModal.id = 'installModal';
+
+            // Create floating install button
+            const installButton = document.createElement('button');
+            installButton.innerHTML = '<i class="fas fa-download mr-2"></i>Установить';
+            installButton.className = 'btn btn-primary fixed bottom-4 right-4 z-50 shadow-lg';
+            installButton.style.display = 'none';
+            installButton.id = 'installButton';
+
+            function showInstallModal() {
+                console.log('showInstallModal called, deferredPrompt:', !!deferredPrompt);
+                if (deferredPrompt) {
+                    installModal.style.display = 'block';
+                } else {
+                    console.log('No deferredPrompt available');
+                }
+            }
+
+            function showInstallPrompt() {
+                console.log('showInstallPrompt called, deferredPrompt:', !!deferredPrompt);
+                if (deferredPrompt) {
+                    console.log('Calling deferredPrompt.prompt()');
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        console.log('Install prompt result:', choiceResult.outcome);
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                            localStorage.setItem('hasShownInstallPrompt', 'true');
+                            if (typeof showMessage === 'function') {
+                                showMessage('Приложение установлено!', 'success');
+                            }
+                        } else {
+                            console.log('User dismissed the install prompt');
+                        }
+                        deferredPrompt = null;
+                        installModal.style.display = 'none';
+                        installButton.style.display = 'none';
+                    });
+                } else {
+                    console.log('No deferredPrompt available for installation');
+                }
+            }
+
+            // Add elements to DOM
+            document.body.appendChild(installModal);
+            document.body.appendChild(installButton);
+            
+            // Install button click
+            const installModalBtn = document.getElementById('installModalBtn');
+            if (installModalBtn) {
+                console.log('Install modal button found, adding click listener');
+                installModalBtn.addEventListener('click', showInstallPrompt);
+            } else {
+                console.error('Install modal button not found!');
+            }
+            
+            // Dismiss button click
+            const dismissInstallBtn = document.getElementById('dismissInstallBtn');
+            if (dismissInstallBtn) {
+                console.log('Dismiss button found, adding click listener');
+                dismissInstallBtn.addEventListener('click', () => {
+                    console.log('Dismiss button clicked');
+                    installModal.style.display = 'none';
+                    localStorage.setItem('hasShownInstallPrompt', 'true');
+                });
+            } else {
+                console.error('Dismiss button not found!');
+            }
+            
+            // Floating install button click
+            installButton.addEventListener('click', showInstallPrompt);
+            console.log('Floating install button click listener added');
+
+            // beforeinstallprompt event listener
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('beforeinstallprompt fired');
+                e.preventDefault();
+                deferredPrompt = e;
+                console.log('deferredPrompt set');
+                
+                // Show modal on first visit for mobile devices
+                const hasShownInstallPrompt = localStorage.getItem('hasShownInstallPrompt');
+                console.log('hasShownInstallPrompt:', hasShownInstallPrompt, 'window.innerWidth:', window.innerWidth);
+                if (!hasShownInstallPrompt && window.innerWidth <= 768) {
+                    console.log('Showing install modal after 2 seconds');
+                    setTimeout(() => {
+                        showInstallModal();
+                    }, 2000);
+                } else {
+                    console.log('Showing floating install button');
+                    installButton.style.display = 'block';
+                }
+            });
+
+            // Check if app is already installed
+            window.addEventListener('appinstalled', (evt) => {
+                console.log('App was installed');
+                localStorage.setItem('hasShownInstallPrompt', 'true');
+                installModal.style.display = 'none';
+                installButton.style.display = 'none';
+                if (typeof showMessage === 'function') {
+                    showMessage('Приложение успешно установлено!', 'success');
+                }
+            });
+
+            // Show install button on mobile devices after delay
+            if (window.innerWidth <= 768 && !window.matchMedia('(display-mode: standalone)').matches) {
+                const hasShownInstallPrompt = localStorage.getItem('hasShownInstallPrompt');
+                if (!hasShownInstallPrompt) {
+                    console.log('Will show floating button after 8 seconds');
+                    setTimeout(() => {
+                        if (installButton.style.display === 'none' && !deferredPrompt) {
+                            console.log('Showing floating button after delay');
+                            installButton.style.display = 'block';
+                        }
+                    }, 8000);
+                }
+            }
+
+            // Test button for debugging (remove in production)
+            const testButton = document.createElement('button');
+            testButton.innerHTML = '🧪 Test PWA';
+            testButton.className = 'btn btn-secondary fixed bottom-4 left-4 z-50 shadow-lg';
+            testButton.onclick = () => {
+                console.log('Test button clicked');
+                console.log('deferredPrompt:', !!deferredPrompt);
+                console.log('installModal:', !!installModal);
+                console.log('installButton:', !!installButton);
+                if (deferredPrompt) {
+                    showInstallModal();
+                } else {
+                    alert('PWA not available. Check console for details.');
+                }
+            };
+            document.body.appendChild(testButton);
+            
             if (db && auth) { // Ensure Firebase services are initialized
                 if (!appInstance) { 
                     console.log("Creating App instance in DOMContentLoaded (db and auth available).");
@@ -1742,126 +1903,6 @@
                         console.log('ServiceWorker registration failed: ', error);
                     });
             });
-        }
-
-        // PWA Install Prompt
-        let deferredPrompt;
-        
-        // Create install modal
-        const installModal = document.createElement('div');
-        installModal.innerHTML = `
-            <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">
-                    <div class="text-center">
-                        <div class="text-4xl mb-4">📱</div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-2">Установить приложение</h3>
-                        <p class="text-gray-600 mb-6">Установите Bay Services Report на рабочий стол для быстрого доступа</p>
-                        <div class="flex space-x-3">
-                            <button id="installModalBtn" class="btn btn-primary flex-1">
-                                <i class="fas fa-download mr-2"></i>Установить
-                            </button>
-                            <button id="dismissInstallBtn" class="btn btn-secondary flex-1">
-                                Позже
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        installModal.style.display = 'none';
-        installModal.id = 'installModal';
-
-        // Create floating install button
-        const installButton = document.createElement('button');
-        installButton.innerHTML = '<i class="fas fa-download mr-2"></i>Установить';
-        installButton.className = 'btn btn-primary fixed bottom-4 right-4 z-50 shadow-lg';
-        installButton.style.display = 'none';
-        installButton.id = 'installButton';
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            console.log('beforeinstallprompt fired');
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // Show modal on first visit for mobile devices
-            const hasShownInstallPrompt = localStorage.getItem('hasShownInstallPrompt');
-            if (!hasShownInstallPrompt && window.innerWidth <= 768) {
-                setTimeout(() => {
-                    showInstallModal();
-                }, 2000);
-            } else {
-                // Show floating button for subsequent visits
-                installButton.style.display = 'block';
-            }
-        });
-
-        function showInstallModal() {
-            if (deferredPrompt) {
-                installModal.style.display = 'block';
-            }
-        }
-
-        function showInstallPrompt() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted the install prompt');
-                        localStorage.setItem('hasShownInstallPrompt', 'true');
-                        showMessage('Приложение установлено!', 'success');
-                    } else {
-                        console.log('User dismissed the install prompt');
-                    }
-                    deferredPrompt = null;
-                    installModal.style.display = 'none';
-                    installButton.style.display = 'none';
-                });
-            }
-        }
-
-        // Add event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            document.body.appendChild(installModal);
-            document.body.appendChild(installButton);
-            
-            // Install button click
-            const installModalBtn = document.getElementById('installModalBtn');
-            if (installModalBtn) {
-                installModalBtn.addEventListener('click', showInstallPrompt);
-            }
-            
-            // Dismiss button click
-            const dismissInstallBtn = document.getElementById('dismissInstallBtn');
-            if (dismissInstallBtn) {
-                dismissInstallBtn.addEventListener('click', () => {
-                    installModal.style.display = 'none';
-                    localStorage.setItem('hasShownInstallPrompt', 'true');
-                });
-            }
-            
-            // Floating install button click
-            installButton.addEventListener('click', showInstallPrompt);
-        });
-
-        // Check if app is already installed
-        window.addEventListener('appinstalled', (evt) => {
-            console.log('App was installed');
-            localStorage.setItem('hasShownInstallPrompt', 'true');
-            installModal.style.display = 'none';
-            installButton.style.display = 'none';
-            showMessage('Приложение успешно установлено!', 'success');
-        });
-
-        // Show install button on mobile devices after delay
-        if (window.innerWidth <= 768 && !window.matchMedia('(display-mode: standalone)').matches) {
-            const hasShownInstallPrompt = localStorage.getItem('hasShownInstallPrompt');
-            if (!hasShownInstallPrompt) {
-                setTimeout(() => {
-                    if (installButton.style.display === 'none' && !deferredPrompt) {
-                        installButton.style.display = 'block';
-                    }
-                }, 8000);
-            }
         }
 
         async function fetchAddressSuggestions(query) {
